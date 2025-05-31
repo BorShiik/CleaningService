@@ -4,18 +4,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanDeal.Data;
 
-public class ApplicationDbContext : IdentityDbContext<Uzytkownik>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-    public DbSet<RodzajUslugi> RodzajeUslug { get; set; }
-    public DbSet<ZamowienieSprzatania> ZamowieniaSprzatania { get; set; }
-    public DbSet<Platnosc> Platnosci { get; set; }
-    public DbSet<WiadomoscCzat> WiadomosciCzat { get; set; }
-    public DbSet<Opinia> Opinie { get; set; }
-    public DbSet<Dostepnosc> Dostepnosci { get; set; }
+    public DbSet<CleaningOrder> CleaningOrders { get; set; } = null!;
+    public DbSet<Payment> Payments { get; set; } = null!;
+    public DbSet<ServiceType> ServiceTypes { get; set; } = null!;
+    public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
+    public DbSet<Review> Reviews { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
