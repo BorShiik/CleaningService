@@ -1,0 +1,51 @@
+﻿@model CleanDeal.DTOs.CleaningOrderDTO
+@{
+    ViewData["Title"] = $"Zlecenie #{Model.Id}";
+    bool isAdmin = User.IsInRole("Admin");
+}
+<h2>Zamówienie #@Model.Id</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Data</dt>
+    <dd class="col-sm-9">@Model.Date.ToString("f")</dd>
+
+    <dt class="col-sm-3">Adres</dt>
+    <dd class="col-sm-9">@Model.Address</dd>
+
+    <dt class="col-sm-3">Usługa</dt>
+    <dd class="col-sm-9">@Model.ServiceTypeName</dd>
+
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">
+        @(Model.IsCompleted ? "Zakończone" : "W toku")
+        @if (Model.IsPaid)
+        {
+            <span class="badge bg-success ms-1">Opłacone</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Kwota</dt>
+    <dd class="col-sm-9">
+        @(Model.PaymentAmount?.ToString("c") ?? "—")
+    </dd>
+    <dt class="col-sm-3">Ocena klienta</dt>
+    <dd class="col-sm-9">
+        @(Model.HasReview ? $"{Model.ReviewRating} / 5" : "brak")
+    </dd>
+</dl>
+
+@if (!Model.IsCompleted)
+{
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+}
+@if (!Model.IsPaid)
+{
+    <a asp-controller="Payments" asp-action="Checkout"
+       asp-route-id="@Model.Id" class="btn btn-success ms-2">Zapłać</a>
+}
+@if (!Model.HasReview && Model.IsCompleted)
+{
+    <a asp-controller="Review" asp-action="Create"
+       asp-route-orderId="@Model.Id" class="btn btn-warning ms-2">Oceń usługę</a>
+}
+<a asp-action="Index" class="btn btn-secondary ms-2">Powrót</a>

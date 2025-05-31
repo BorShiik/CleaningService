@@ -1,0 +1,51 @@
+﻿@model IEnumerable<CleanDeal.DTOs.ChatMessageDTO>
+@{
+    ViewData["Title"] = "Czat – zlecenie " + ViewBag.OrderId;
+    int orderId = ViewBag.OrderId;
+}
+<h2>Czat &mdash; zlecenie #@orderId (@ViewBag.ServiceName)</h2>
+
+<ul id="messagesList" class="list-group mb-3">
+    @foreach (var m in Model)
+    {
+        <li class="list-group-item">
+            <strong>@m.UserName:</strong> @m.Content
+            <small class="text-muted float-end">@m.SentAt.ToLocalTime().ToString("HH:mm")</small>
+        </li>
+    }
+</ul>
+
+<div class="input-group">
+    <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
+    <button id="sendBtn" class="btn btn-primary">Wyślij</button>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"
+            integrity="sha512-a0s4F9MGAHwwKgJ4uR8fRjPCbX2T3Bi9lABt8+7uQvZCbv97fdzSG4uY1oE+d90Vt/c9l5wBQVpfqHRFe4UTwg=="
+            crossorigin="anonymous"></script>
+    <script>
+        const orderId = @orderId;
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", (user, msg, ordId) => {
+            if (ordId !== orderId) return;              
+            const li = document.createElement("li");
+            li.className = "list-group-item";
+            li.innerHTML = `<strong>${user}:</strong> ${msg}
+                <small class="text-muted float-end">${new Date().toLocaleTimeString()}</small>`;
+            document.getElementById("messagesList").appendChild(li);
+        });
+
+        connection.start();
+
+        document.getElementById("sendBtn").addEventListener("click", () => {
+            const txt = document.getElementById("messageInput");
+            if (!txt.value) return;
+            connection.invoke("SendMessage", "@User.Identity!.Name", txt.value, orderId);
+            txt.value = "";
+        });
+    </script>
+}

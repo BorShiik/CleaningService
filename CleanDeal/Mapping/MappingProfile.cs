@@ -9,14 +9,17 @@ namespace CleanDeal.Mapping
     {
         public MappingProfile() {
             CreateMap<CleaningOrder, CleaningOrderDTO>()
-               .ForMember(dto => dto.ServiceTypeName, opt => opt.MapFrom(src => src.ServiceType.Name))
-               .ForMember(dto => dto.UserEmail, opt => opt.MapFrom(src => src.User.Email))
-               .ForMember(dto => dto.IsPaid, opt => opt.MapFrom(src => src.Payment != null));
+               .ForMember(d => d.ServiceTypeName, o => o.MapFrom(s => s.ServiceType.Name))
+               .ForMember(d => d.PaymentAmount, o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
+               .ForMember(d => d.HasReview, o => o.MapFrom(s => s.Review != null))
+               .ForMember(d => d.ReviewRating, o => o.MapFrom(s => s.Review != null ? (int?)s.Review.Rating : null));
+
+            CreateMap<CleaningOrder, OrderCreateViewModel>()
+                .ForMember(d => d.ServiceTypeOptions, o => o.Ignore());
 
             CreateMap<Payment, PaymentDTO>();
 
-            CreateMap<ChatMessage, ChatMessageDTO>()
-                .ForMember(dto => dto.SenderName, opt => opt.MapFrom(src => src.User.FullName));
+            CreateMap<ChatMessage, ChatMessageDTO>().ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
 
             CreateMap<Review, ReviewDTO>();
 

@@ -22,7 +22,6 @@ namespace CleanDeal.Models
 
         public Payment? Payment { get; set; }
         public Review? Review { get; set; }
-
-        public ICollection<ChatMessage>? ChatMessages { get; set; }
+        public ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
     }
 }

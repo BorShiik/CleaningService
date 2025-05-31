@@ -1,0 +1,26 @@
+﻿@model CleanDeal.Models.CleaningOrder
+@{
+    ViewData["Title"] = "Płatność";
+}
+<h2>Podsumowanie płatności</h2>
+
+<p>
+    Usługa: <strong>@Model.ServiceType.Name</strong><br />
+    Kwota do zapłaty: <strong>@ViewBag.AmountDisplay.ToString("c")</strong>
+</p>
+
+<button id="payBtn" class="btn btn-success">Zapłać teraz</button>
+<span id="error" class="text-danger ms-2"></span>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe("@ViewBag.PublishableKey");
+
+    document.getElementById("payBtn").addEventListener("click", () => {
+        fetch("/Payments/CreateCheckoutSession?orderId=@Model.Id",
+              { method: "POST" })
+            .then(r => r.json())
+            .then(data => stripe.redirectToCheckout({ sessionId: data.id }))
+            .catch(e => document.getElementById("error").textContent = e);
+    });
+</script>

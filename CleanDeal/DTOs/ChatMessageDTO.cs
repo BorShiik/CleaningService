@@ -2,8 +2,11 @@
 {
     public class ChatMessageDTO
     {
-        public string Content { get; set; } = string.Empty;
+        public int Id { get; set; }
+        public string UserId { get; set; } = default!;
+        public string UserName { get; set; } = default!;      
+        public string Content { get; set; } = default!;
         public DateTime SentAt { get; set; }
-        public string SenderName { get; set; } = string.Empty;
+        public int CleaningOrderId { get; set; }
     }
 }

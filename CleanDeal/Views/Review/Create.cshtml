@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Opinia";
+    int orderId = ViewBag.OrderId;
+}
+<h2>Wystaw opinię dla zlecenia #@orderId</h2>
+
+<form asp-action="Create" asp-route-orderId="@orderId" method="post">
+    <div class="mb-3">
+        <label class="form-label">Ocena (1–5)</label>
+        <select name="rating" class="form-select">
+            @for (int i = 1; i <= 5; i++)
+            {
+                <option value="@i">@i</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Komentarz (opcjonalnie)</label>
+        <textarea name="comment" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Wyślij</button>
+    <a asp-controller="Orders" asp-action="Details"
+       asp-route-id="@orderId" class="btn btn-secondary">Anuluj</a>
+</form>

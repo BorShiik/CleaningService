@@ -1,4 +1,6 @@
-﻿namespace CleanDeal.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CleanDeal.Models
 {
     public class ServiceType
     {
@@ -7,5 +9,7 @@
         public string? Description { get; set; }
 
         public ICollection<CleaningOrder>? CleaningOrders { get; set; }
+        [Range(0, 10_000)]
+        public decimal BasePrice { get; set; }
     }
 }

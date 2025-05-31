@@ -1,0 +1,61 @@
+﻿@model IEnumerable<CleanDeal.DTOs.CleaningOrderDTO>
+@{
+    ViewData["Title"] = "Moje zlecenia";
+    bool isAdmin = User.IsInRole("Admin");
+}
+<h2>@ViewData["Title"]</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">Nowe zamówienie</a>
+</p>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Usługa</th>
+            <th>Status</th>
+            <th>Kwota</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.Id</td>
+                <td>@o.Date.ToString("g")</td>
+                <td>@o.ServiceTypeName</td>
+                <td>
+                    @(o.IsCompleted ? "Zakończone" : "W toku")
+                    @if (o.IsCompleted)
+                    {
+                        <span class="badge bg-success ms-1">Opłacone</span>
+                    }
+                </td>
+                <td>@(o.PaymentAmount.HasValue ? o.PaymentAmount.Value.ToString("c") : "—")</td
+                <td>
+                    <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-primary ms-3" >Szczegóły</a>
+                    @if (!o.IsCompleted)
+                    {
+                        <a asp-action = "Edit" asp-route-id = "@o.Id" class="btn btn-primary ms-2" > Edytuj </a>
+                    }
+                    @if (!o.IsCompleted)
+                    {
+                        <a asp-controller = "Payments" asp-action = "Checkout"
+                        asp-route-id = "@o.Id" class="btn btn-primary ms-2"> Zapłać </a>
+                    }
+                    @if (isAdmin || (!o.IsCompleted && o.IsCompleted))
+                    {
+                        <form asp-action="Delete" asp-route-id="@o.Id" method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('Usunąć?');">
+                            <button class="btn btn-link p-0">Usuń</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
