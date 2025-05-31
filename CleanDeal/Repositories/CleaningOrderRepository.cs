@@ -1,0 +1,80 @@
+﻿using CleanDeal.Data;
+using CleanDeal.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace CleanDeal.Repositories
+{
+    public class CleaningOrderRepository : ICleaningOrderRepository
+    {
+        private readonly ApplicationDbContext _context;
+        public CleaningOrderRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+        public async Task AddAsync(CleaningOrder order)
+        {
+            _context.CleaningOrders.Add(order);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> CountAsync()
+        {
+            return await _context.CleaningOrders.CountAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var order = await _context.CleaningOrders.FindAsync(id);
+            if (order != null)
+            {
+                _context.CleaningOrders.Remove(order);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<IEnumerable<CleaningOrder>> GetAllAsync()
+        {
+            return await _context.CleaningOrders
+             .Include(o => o.User)
+             .Include(o => o.ServiceType)
+             .Include(o => o.Payment)
+             .Include(o => o.Review)
+             .ToListAsync();
+        }
+
+        public async Task<CleaningOrder?> GetByIdAsync(int id)
+        {
+            return await _context.CleaningOrders
+                .Include(o => o.User)
+                .Include(o => o.ServiceType)
+                .Include(o => o.Payment)
+                .Include(o => o.Review)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        }
+
+        public async Task<IEnumerable<CleaningOrder>> GetByUserIdAsync(string userId)
+        {
+            return await _context.CleaningOrders
+                .Include(o => o.ServiceType)
+                .Include(o => o.Payment)
+                .Include(o => o.Review)
+                .Where(o => o.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<CleaningOrder>> GetRecentOrdersAsync(int count)
+        {
+            return await _context.CleaningOrders
+                .Include(o => o.User).Include(o => o.ServiceType)
+                .OrderByDescending(o => o.Date)
+                .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task UpdateAsync(CleaningOrder order)
+        {
+            _context.CleaningOrders.Update(order);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
