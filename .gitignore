@@ -431,6 +431,3 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-
-BBtan/
-BBTanGame.sln
