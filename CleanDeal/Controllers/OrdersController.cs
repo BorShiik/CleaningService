@@ -8,213 +8,144 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
 
-namespace CleanDeal.Controllers
+namespace CleanDeal.Controllers;
+
+[Authorize(Roles = "Client,Admin")]
+public class OrdersController : Controller
 {
-    [Authorize]
-    public class OrdersController: Controller
+    private readonly ICleaningOrderRepository _orders;
+    private readonly IServiceTypeRepository _services;
+    private readonly IMapper _mapper;
+
+    public OrdersController(ICleaningOrderRepository orders,
+                            IServiceTypeRepository services,
+                            IMapper mapper)
     {
-        private readonly ICleaningOrderRepository _orderRepo;
-        private readonly IServiceTypeRepository _serviceTypeRepo;
-        private readonly IMapper _mapper;
+        _orders = orders;
+        _services = services;
+        _mapper = mapper;
+    }
 
-        public OrdersController(ICleaningOrderRepository orderRepo, IServiceTypeRepository serviceTypeRepo, IMapper mapper)
+    /* ------------------------------------------------  LISTA  ------------------------------------------------ */
+
+    public async Task<IActionResult> Index()
+    {
+        IEnumerable<CleaningOrder> src = User.IsInRole("Admin")
+            ? await _orders.GetAllAsync()
+            : await _orders.GetByUserIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        return View(_mapper.Map<IEnumerable<CleaningOrderDTO>>(src));
+    }
+
+    /* ---------------------------------------------  CREATE / EDIT  --------------------------------------------- */
+
+    private async Task FillServiceOptionsAsync(OrderCreateViewModel vm)
+    {
+        var list = (await _services.GetAllAsync()).ToList();
+        vm.ServiceTypeOptions = list.Select(s => new SelectListItem
         {
-            _orderRepo = orderRepo;
-            _serviceTypeRepo = serviceTypeRepo;
-            _mapper = mapper;
+            Value = s.Id.ToString(),
+            Text = $"{s.Name} ({s.BasePrice:c})"
+        });
+        vm.PriceMap = list.ToDictionary(s => s.Id, s => s.BasePrice);
+    }
+
+    public async Task<IActionResult> Create()
+    {
+        var vm = new OrderCreateViewModel();
+        await FillServiceOptionsAsync(vm);
+        return View(vm);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(OrderCreateViewModel vm)
+    {
+        if (!vm.SelectedServiceTypeIds.Any())
+            ModelState.AddModelError(string.Empty, "Wybierz przynajmniej jedną usługę.");
+
+        if (!ModelState.IsValid)
+        {
+            await FillServiceOptionsAsync(vm);
+            return View(vm);
         }
 
-        public async Task<IActionResult> Index()
-        {
-            IEnumerable<CleaningOrder> orders;
-            if (User.IsInRole("Admin"))
-            {
-                orders = await _orderRepo.GetAllAsync();
-            }
-            else
-            {
-                string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                orders = await _orderRepo.GetByUserIdAsync(userId);
-            }
+        var order = _mapper.Map<CleaningOrder>(vm);
+        order.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        order.Status = OrderStatus.WaitingForCleaner;
 
-            var orderDtos = _mapper.Map<IEnumerable<CleaningOrderDTO>>(orders);
-            return View(orderDtos);
+        await _orders.AddAsync(order, vm.SelectedServiceTypeIds);
+        return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var order = await _orders.GetByIdAsync(id);
+        if (order is null || order.Status == OrderStatus.Finished) return NotFound();
+
+        var vm = _mapper.Map<OrderCreateViewModel>(order);
+        await FillServiceOptionsAsync(vm);
+        return View("Create", vm);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, OrderCreateViewModel vm)
+    {
+        if (id != vm.Id) return NotFound();
+
+        if (!vm.SelectedServiceTypeIds.Any())
+            ModelState.AddModelError(string.Empty, "Wybierz przynajmniej jedną usługę.");
+
+        if (!ModelState.IsValid)
+        {
+            await FillServiceOptionsAsync(vm);
+            return View("Create", vm);
         }
 
-        public async Task<IActionResult> Create()
+        var order = await _orders.GetByIdAsync(id);
+        if (order is null || order.Status == OrderStatus.Finished) return NotFound();
+
+        order.Date = vm.Date;
+        order.Address = vm.Address;
+
+        await _orders.UpdateAsync(order, vm.SelectedServiceTypeIds);
+        return RedirectToAction(nameof(Index));
+    }
+
+    /* ------------------------------------------------  DELETE  ------------------------------------------------ */
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var order = await _orders.GetByIdAsync(id);
+        if (order is null) return NotFound();
+
+        if (!User.IsInRole("Admin") && order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            return Forbid();
+
+        if (order.Status == OrderStatus.Finished || order.Payment != null)
         {
-            var serviceTypes = await _serviceTypeRepo.GetAllAsync();
-            var model = new OrderCreateViewModel
-            {
-                Date = System.DateTime.Today.AddDays(1), 
-                ServiceTypeOptions = serviceTypes.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                {
-                    Value = st.Id.ToString(),
-                    Text = st.Name
-                })
-            };
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(OrderCreateViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                var serviceTypes = await _serviceTypeRepo.GetAllAsync();
-                model.ServiceTypeOptions = serviceTypes.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                {
-                    Value = st.Id.ToString(),
-                    Text = st.Name
-                });
-                return View(model);
-            }
-
-            var newOrder = _mapper.Map<CleaningOrder>(model);
-            newOrder.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            newOrder.Status = OrderStatus.WaitingForCleaner;
-            newOrder.IsCompleted = false;
-
-            await _orderRepo.AddAsync(newOrder);
-
+            TempData["Error"] = "Nie można usunąć ukończonego lub opłaconego zlecenia.";
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Details(int id)
+        return View(_mapper.Map<CleaningOrderDTO>(order));
+    }
+
+    [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var order = await _orders.GetByIdAsync(id);
+        if (order is null) return NotFound();
+
+        if (!User.IsInRole("Admin") && order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            return Forbid();
+
+        if (order.Status == OrderStatus.Finished || order.Payment != null)
         {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
-            if (!User.IsInRole("Admin") && order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
-            {
-                return Forbid();
-            }
-
-            var orderDto = _mapper.Map<CleaningOrderDTO>(order);
-            return View(orderDto);
-        }
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return NotFound();
-
-            if (!User.IsInRole("Admin") &&
-                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
-                return Forbid();
-
-            if (order.IsCompleted)
-            {
-                TempData["Error"] = "Nie można edytować zakończonego zlecenia.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            var vm = _mapper.Map<OrderCreateViewModel>(order);
-
-            var serviceTypes = await _serviceTypeRepo.GetAllAsync();
-            vm.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
-            {
-                Value = st.Id.ToString(),
-                Text = st.Name
-            });
-
-            return View(vm);      
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, OrderCreateViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                var serviceTypes = await _serviceTypeRepo.GetAllAsync();
-                model.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
-                {
-                    Value = st.Id.ToString(),
-                    Text = st.Name
-                });
-                return View(model);
-            }
-
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return NotFound();
-
-            if (!User.IsInRole("Admin") &&
-                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
-                return Forbid();
-
-            if (order.IsCompleted)
-            {
-                TempData["Error"] = "Nie można edytować zakończonego zlecenia.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            order.Date = model.Date;
-            order.Address = model.Address;
-            order.ServiceTypeId = model.ServiceTypeId;
-
-            await _orderRepo.UpdateAsync(order);
-            TempData["Message"] = "Zamówienie zaktualizowano.";
-
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        public async Task<IActionResult> Delete(int id)
-        {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return NotFound();
-
-            if (!User.IsInRole("Admin") &&
-                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
-                return Forbid();
-
-            if (order.IsCompleted || order.Payment != null)
-            {
-                TempData["Error"] = "Nie można usunąć zakończonego lub opłaconego zlecenia.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            var dto = _mapper.Map<CleaningOrderDTO>(order);
-            return View(dto);          // Views/Orders/Delete.cshtml – strona z pytaniem „czy na pewno?”
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return NotFound();
-
-            if (!User.IsInRole("Admin") &&
-                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
-                return Forbid();
-
-            if (order.IsCompleted || order.Payment != null)
-            {
-                TempData["Error"] = "Nie można usunąć zakończonego lub opłaconego zlecenia.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            await _orderRepo.DeleteAsync(id);
-            TempData["Message"] = "Zamówienie usunięto.";
+            TempData["Error"] = "Nie można usunąć ukończonego lub opłaconego zlecenia.";
             return RedirectToAction(nameof(Index));
         }
 
-      /*  public async Task<IActionResult> Available()
-        {
-            var list = (await _repo.GetAvailableAsync())
-                       .Select(o => _mapper.Map<CleanerAvailableOrderDTO>(o));
-            return View(list);
-        }
-
-        public async Task<IActionResult> My()
-        {
-            var list = (await _orderRepo.GetByUserIdAsync(_cleanerId))
-                       .Select(o => _mapper.Map<CleanerMyOrderDTO>(o));
-            return View(list);
-        }*/
+        await _orders.DeleteAsync(id);
+        return RedirectToAction(nameof(Index));
     }
 }

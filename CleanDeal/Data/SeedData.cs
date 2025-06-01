@@ -94,7 +94,6 @@ namespace CleanDeal.Data
                     Address = "ul. Przykładowa 1, Kraków",
                     Date = DateTime.Today.AddDays(2).AddHours(9),
                     Status = OrderStatus.Finished,
-                    IsCompleted = true
                 };
                 context.CleaningOrders.Add(order);
                 await context.SaveChangesAsync();

@@ -1,12 +1,16 @@
 ﻿@model CleanDeal.DTOs.CleaningOrderDTO
 @{
-    ViewData["Title"] = "Usuń zlecenie";
+    ViewData["Title"] = "Potwierdź usunięcie";
+    Layout = "_Layout";
 }
-<h2>Czy na pewno usunąć zlecenie #@Model.Id?</h2>
+
+<h2>@ViewData["Title"]</h2>
+
+<h4>Czy na pewno chcesz usunąć zamówienie <strong>#@Model.Id</strong>?</h4>
 
 <dl class="row">
     <dt class="col-sm-3">Data</dt>
-    <dd class="col-sm-9">@Model.Date.ToString("g")</dd>
+    <dd class="col-sm-9">@Model.Date:g</dd>
 
     <dt class="col-sm-3">Adres</dt>
     <dd class="col-sm-9">@Model.Address</dd>
@@ -15,7 +19,8 @@
     <dd class="col-sm-9">@Model.ServiceTypeName</dd>
 </dl>
 
-<form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
     <button type="submit" class="btn btn-danger">Usuń</button>
-    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Anuluj</a>
+    <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
 </form>

@@ -1,33 +1,104 @@
 ﻿@model CleanDeal.ViewModel.OrderCreateViewModel
+
 @{
     ViewData["Title"] = "Nowe zamówienie";
+    Layout = "_Layout";
 }
+
 <h2>@ViewData["Title"]</h2>
 
 <form asp-action="Create" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
+    @Html.AntiForgeryToken()
 
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <!-- Termin sprzątania (tylko data) -->
     <div class="mb-3">
         <label asp-for="Date" class="form-label"></label>
-        <input asp-for="Date" class="form-control" type="datetime-local" />
+        <input asp-for="Date"
+               class="form-control"
+               type="date"
+               value="@Model.Date:yyyy-MM-dd" />
         <span asp-validation-for="Date" class="text-danger"></span>
     </div>
+
+    <!-- Adres -->
     <div class="mb-3">
         <label asp-for="Address" class="form-label"></label>
         <input asp-for="Address" class="form-control" />
         <span asp-validation-for="Address" class="text-danger"></span>
     </div>
+
+    <!-- Check-boxy usług -->
     <div class="mb-3">
-        <label asp-for="ServiceTypeId" class="form-label"></label>
-        <select asp-for="ServiceTypeId" class="form-select"
-                asp-items="Model.ServiceTypeOptions"></select>
-        <span asp-validation-for="ServiceTypeId" class="text-danger"></span>
+        <label class="form-label">Wybierz usługi:</label>
+
+        @foreach (var opt in Model.ServiceTypeOptions)
+        {
+            var id = int.Parse(opt.Value);
+            var price = Model.PriceMap[id];
+            bool chk = Model.SelectedServiceTypeIds.Contains(id);
+
+            <div class="form-check">
+                <input class="form-check-input service-chk"
+                       type="checkbox"
+                       name="SelectedServiceTypeIds"
+                       value="@id"
+                       data-price="@price.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                       id="srv_@id"
+                       @(chk ? "checked" : "") />
+
+                <label class="form-check-label" for="srv_@id">
+                    @opt.Text
+                </label>
+            </div>
+        }
+
+        <span asp-validation-for="SelectedServiceTypeIds" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-success">Złóż zamówienie</button>
-    <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+    <!-- Łączna cena -->
+    <div class="mb-3">
+        <strong>
+            Łączna cena: <span id="totalPrice">
+                @(Model.TotalPrice.ToString("c", System.Globalization.CultureInfo.GetCultureInfo("pl-PL")))
+            </span>
+        </strong>
+
+        <input type="hidden" asp-for="TotalPrice" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submitBtn"
+            disabled="@(Model.SelectedServiceTypeIds.Count == 0)">
+        Zamów
+    </button>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (() => {
+            const chks = document.querySelectorAll('.service-chk');
+            const priceBox = document.getElementById('totalPrice');
+            const hidden = document.getElementById('TotalPrice');
+            const btn = document.getElementById('submitBtn');
+
+            const plnFmt = new Intl.NumberFormat('pl-PL', {
+                style: 'currency',
+                currency: 'PLN'
+            });
+
+            function recalc() {
+                let sum = 0;
+                chks.forEach(c => { if (c.checked) sum += parseFloat(c.dataset.price); });
+                priceBox.textContent = plnFmt.format(sum);
+                hidden.value = sum.toFixed(2);
+                btn.disabled = (sum === 0);
+            }
+
+            chks.forEach(c => c.addEventListener('change', recalc));
+            recalc();   // pierwsze wywołanie po załadowaniu strony
+        })();
+    </script>
 }

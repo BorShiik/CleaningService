@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace CleanDeal.Data
 {
@@ -15,6 +16,7 @@ namespace CleanDeal.Data
         public DbSet<Payment> Payments => Set<Payment>();
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
         public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -24,8 +26,8 @@ namespace CleanDeal.Data
             b.Entity<ServiceType>().Property(s => s.BasePrice).HasPrecision(18, 2);
 
             b.Entity<CleaningOrder>()
-                .Property(o => o.Status)
-                .HasConversion<string>();
+                 .Property(o => o.TotalPrice)
+                 .HasPrecision(18, 2);
 
             b.Entity<CleaningOrder>()
                .HasOne(o => o.Cleaner)
@@ -50,6 +52,32 @@ namespace CleanDeal.Data
                .WithOne(o => o.Review)
                .HasForeignKey<Review>(r => r.CleaningOrderId)
                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<OrderItem>(oi =>
+            {
+                oi.ToTable("OrderItems");          //  ⬅️ jawnie wymuszamy liczbę mnogą
+
+                oi.HasKey(x => x.Id);
+
+                oi.HasOne(x => x.CleaningOrder)
+                  .WithMany(o => o.Items)
+                  .HasForeignKey(x => x.CleaningOrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+                oi.HasOne(x => x.ServiceType)
+                  .WithMany()
+                  .HasForeignKey(x => x.ServiceTypeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+                oi.Property(x => x.Price)
+                  .HasPrecision(18, 2);
+            });
+
+            /* b.Entity<OrderItem>()
+                 .HasOne(oi => oi.ServiceType)
+                 .WithMany() // нет отдельной навигации OrderItems в ServiceType
+                 .HasForeignKey(oi => oi.ServiceTypeId)
+                 .OnDelete(DeleteBehavior.Restrict);*/
         }
 
     }

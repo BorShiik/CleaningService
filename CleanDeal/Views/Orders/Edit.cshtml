@@ -1,35 +1,8 @@
 ﻿@model CleanDeal.ViewModel.OrderCreateViewModel
 @{
-    ViewData["Title"] = "Edytuj zlecenie";
+    ViewData["Title"] = "Edytuj zamówienie";
+    Layout = "_Layout";
 }
+
 <h2>@ViewData["Title"]</h2>
-
-<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
-
-    <input asp-for="Id" type="hidden" />
-
-    <div class="mb-3">
-        <label asp-for="Date" class="form-label"></label>
-        <input asp-for="Date" class="form-control" type="datetime-local" />
-        <span asp-validation-for="Date" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Address" class="form-label"></label>
-        <input asp-for="Address" class="form-control" />
-        <span asp-validation-for="Address" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="ServiceTypeId" class="form-label"></label>
-        <select asp-for="ServiceTypeId" class="form-select"
-                asp-items="Model.ServiceTypeOptions"></select>
-        <span asp-validation-for="ServiceTypeId" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Zapisz</button>
-    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Anuluj</a>
-</form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+@await Html.PartialAsync("Create", Model)

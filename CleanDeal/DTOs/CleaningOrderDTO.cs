@@ -13,5 +13,6 @@
         public decimal? PaymentAmount { get; set; }
         public bool HasReview { get; set; }
         public int? ReviewRating { get; set; }
+        public decimal OrderTotal { get; set; }
     }
 }
