@@ -28,7 +28,12 @@
                 <td>@o.Date.ToString("g")</td>
                 <td>@o.ServiceTypeName</td>
                 <td>
-                    @(o.IsCompleted ? "Zakończone" : "W toku")
+                    @(o.Status switch
+                    {
+                        "Ukończone" => "Ukończone",
+                        "Oczekuje" => "Oczekuje",
+                        _ => "W toku"
+                    })
                     @if (o.IsCompleted)
                     {
                         <span class="badge bg-success ms-1">Opłacone</span>

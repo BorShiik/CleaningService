@@ -1,0 +1,24 @@
+﻿@model IEnumerable<CleanDeal.DTOs.CleanerAvailableOrderDTO>
+@{
+    ViewData["Title"] = "Wolne zlecenia";
+}
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-hover">
+    <thead><tr><th>Data</th><th>Adres</th><th>Usługa</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.Date:g</td>
+                <td>@o.Address</td>
+                <td>@o.ServiceName</td>
+                <td>
+                    <form asp-action="Accept" asp-route-id="@o.Id" method="post">
+                        <button class="btn btn-success btn-sm">Przyjmij</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

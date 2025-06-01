@@ -6,7 +6,7 @@
         public DateTime Date { get; set; }
         public string Address { get; set; } = string.Empty;
         public bool IsCompleted { get; set; }
-
+        public string Status { get; set; } = string.Empty;
         public string ServiceTypeName { get; set; } = string.Empty;  
         public string UserEmail { get; set; } = string.Empty;
         public bool IsPaid => PaymentAmount.HasValue;

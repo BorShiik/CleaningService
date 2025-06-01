@@ -72,7 +72,8 @@ namespace CleanDeal.Controllers
             }
 
             var newOrder = _mapper.Map<CleaningOrder>(model);
-            newOrder.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);  
+            newOrder.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            newOrder.Status = OrderStatus.WaitingForCleaner;
             newOrder.IsCompleted = false;
 
             await _orderRepo.AddAsync(newOrder);
@@ -201,5 +202,19 @@ namespace CleanDeal.Controllers
             TempData["Message"] = "Zamówienie usunięto.";
             return RedirectToAction(nameof(Index));
         }
+
+      /*  public async Task<IActionResult> Available()
+        {
+            var list = (await _repo.GetAvailableAsync())
+                       .Select(o => _mapper.Map<CleanerAvailableOrderDTO>(o));
+            return View(list);
+        }
+
+        public async Task<IActionResult> My()
+        {
+            var list = (await _orderRepo.GetByUserIdAsync(_cleanerId))
+                       .Select(o => _mapper.Map<CleanerMyOrderDTO>(o));
+            return View(list);
+        }*/
     }
 }

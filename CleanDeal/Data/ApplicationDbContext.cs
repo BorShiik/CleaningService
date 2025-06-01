@@ -24,6 +24,16 @@ namespace CleanDeal.Data
             b.Entity<ServiceType>().Property(s => s.BasePrice).HasPrecision(18, 2);
 
             b.Entity<CleaningOrder>()
+                .Property(o => o.Status)
+                .HasConversion<string>();
+
+            b.Entity<CleaningOrder>()
+               .HasOne(o => o.Cleaner)
+               .WithMany(u => u.CleanerOrders)
+               .HasForeignKey(o => o.CleanerId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<CleaningOrder>()
                .HasOne(o => o.Payment)
                .WithOne(p => p.CleaningOrder)
                .HasForeignKey<Payment>(p => p.CleaningOrderId)

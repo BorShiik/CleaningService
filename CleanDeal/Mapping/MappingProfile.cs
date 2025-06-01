@@ -9,13 +9,31 @@ namespace CleanDeal.Mapping
     {
         public MappingProfile() {
             CreateMap<CleaningOrder, CleaningOrderDTO>()
-               .ForMember(d => d.ServiceTypeName, o => o.MapFrom(s => s.ServiceType.Name))
-               .ForMember(d => d.PaymentAmount, o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
-               .ForMember(d => d.HasReview, o => o.MapFrom(s => s.Review != null))
-               .ForMember(d => d.ReviewRating, o => o.MapFrom(s => s.Review != null ? (int?)s.Review.Rating : null));
+                .ForMember(d => d.ServiceTypeName,
+                           o => o.MapFrom(s => s.ServiceType.Name))
+                .ForMember(d => d.PaymentAmount,
+                           o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
+                .ForMember(d => d.HasReview,
+                           o => o.MapFrom(s => s.Review != null))
+                .ForMember(d => d.ReviewRating,
+                           o => o.MapFrom(s => s.Review != null ? (int?)s.Review.Rating : null))
+                .ForMember(d => d.Status,
+                           o => o.MapFrom(s =>
+                                  s.Status == OrderStatus.WaitingForCleaner ? "Oczekuje"
+                                    : s.Status == OrderStatus.InProcess ? "W toku"
+                                    : "Ukończone"));
 
             CreateMap<CleaningOrder, OrderCreateViewModel>()
                 .ForMember(d => d.ServiceTypeOptions, o => o.Ignore());
+
+            CreateMap<CleaningOrder, CleanerAvailableOrderDTO>()
+                 .ForMember(d => d.ServiceName, o => o.MapFrom(s => s.ServiceType.Name));
+
+            CreateMap<CleaningOrder, CleanerMyOrderDTO>()
+                .ForMember(d => d.ServiceName, o => o.MapFrom(s => s.ServiceType.Name))
+                .ForMember(d => d.Status, o => o.MapFrom(s =>
+                    s.Status == OrderStatus.Finished ? "Ukończone" : "W trakcie"))
+                .ForMember(d => d.CanComplete, o => o.MapFrom(s => s.Status == OrderStatus.InProcess));
 
             CreateMap<Payment, PaymentDTO>();
 

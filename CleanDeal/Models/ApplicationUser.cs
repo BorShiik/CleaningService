@@ -9,6 +9,7 @@ namespace CleanDeal.Models
         public string FullName { get; set; } = string.Empty;
 
         public ICollection<CleaningOrder>? CleaningOrders { get; set; }
+        public ICollection<CleaningOrder> CleanerOrders { get; set; } = new List<CleaningOrder>();
         public ICollection<ChatMessage>? ChatMessages { get; set; }
         public ICollection<Review>? Reviews { get; set; }
     }
