@@ -16,22 +16,25 @@ namespace CleanDeal.Repositories
         public async Task<ApplicationUser?> GetByIdAsync(string userId)
         {
             return await _context.Users
-                          .Include(u => u.CleaningOrders)
-                          .FirstOrDefaultAsync(u => u.Id == userId);
+                .Include(u => u.ClientOrders)
+                .Include(u => u.CleanerOrders)
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task<ApplicationUser?> FindByEmailAsync(string email)
         {
             return await _context.Users
-                          .Include(u => u.CleaningOrders)
-                          .FirstOrDefaultAsync(u => u.Email == email);
+                .Include(u => u.ClientOrders)
+                .Include(u => u.CleanerOrders)
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
         {
             return await _context.Users
-                          .Include(u => u.CleaningOrders)
-                          .ToListAsync();
+                .Include(u => u.ClientOrders)
+                .Include(u => u.CleanerOrders)
+                .ToListAsync();
         }
 
         public async Task<int> CountAsync() =>

@@ -24,16 +24,28 @@ namespace CleanDeal.Data
             b.Entity<ServiceType>().Property(s => s.BasePrice).HasPrecision(18, 2);
 
             b.Entity<CleaningOrder>()
-               .HasOne(o => o.Payment)
-               .WithOne(p => p.CleaningOrder)
-               .HasForeignKey<Payment>(p => p.CleaningOrderId)
-               .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(o => o.User)
+                .WithMany(u => u.ClientOrders)
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<CleaningOrder>()
+                .HasOne(o => o.AssignedCleaner)
+                .WithMany(u => u.CleanerOrders)
+                .HasForeignKey(o => o.AssignedCleanerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<ChatMessage>()
-               .HasOne(m => m.CleaningOrder)
-               .WithMany(o => o.ChatMessages)
-               .HasForeignKey(m => m.CleaningOrderId)
-               .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(cm => cm.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(cm => cm.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<ChatMessage>()
+                .HasOne(cm => cm.Receiver)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(cm => cm.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<Review>()
                .HasOne(r => r.CleaningOrder)

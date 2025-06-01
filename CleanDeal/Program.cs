@@ -1,4 +1,5 @@
 using CleanDeal.Data;
+using CleanDeal.Hubs;
 using CleanDeal.Repositories;
 using CleanDeal.Models;
 using Microsoft.AspNetCore.Identity;
@@ -77,7 +78,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
-// SignalR Hub
-//app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("/chatHub"); 
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

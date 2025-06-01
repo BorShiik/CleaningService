@@ -106,10 +106,12 @@ namespace CleanDeal.Data
                 };
                 context.Payments.Add(payment);
 
+                var adminUser = await userManager.FindByEmailAsync(adminEmail);
                 context.ChatMessages.Add(new ChatMessage
                 {
                     CleaningOrderId = order.Id,
-                    UserId = client.Id,
+                    SenderId = client.Id,
+                    ReceiverId = adminUser.Id,
                     Content = "Proszę zwrócić uwagę na kuchnię.",
                     SentAt = DateTime.UtcNow
                 });

@@ -4,6 +4,7 @@ using CleanDeal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanDeal.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250601122136_AddAssignedCleanerToOrder")]
+    partial class AddAssignedCleanerToOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -108,6 +111,7 @@ namespace CleanDeal.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ReceiverId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SenderId")
@@ -395,7 +399,8 @@ namespace CleanDeal.Data.Migrations
                     b.HasOne("CleanDeal.Models.ApplicationUser", "Receiver")
                         .WithMany("ReceivedMessages")
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("CleanDeal.Models.ApplicationUser", "Sender")
                         .WithMany("SentMessages")
