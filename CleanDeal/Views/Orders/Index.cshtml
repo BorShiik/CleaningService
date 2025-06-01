@@ -34,26 +34,30 @@
                         <span class="badge bg-success ms-1">Opłacone</span>
                     }
                 </td>
-                <td>@(o.PaymentAmount.HasValue ? o.PaymentAmount.Value.ToString("c") : "—")</td
                 <td>
-                    <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-primary ms-3" >Szczegóły</a>
-                    @if (!o.IsCompleted)
-                    {
-                        <a asp-action = "Edit" asp-route-id = "@o.Id" class="btn btn-primary ms-2" > Edytuj </a>
-                    }
-                    @if (!o.IsCompleted)
-                    {
-                        <a asp-controller = "Payments" asp-action = "Checkout"
-                        asp-route-id = "@o.Id" class="btn btn-primary ms-2"> Zapłać </a>
-                    }
-                    @if (isAdmin || (!o.IsCompleted && o.IsCompleted))
-                    {
-                        <form asp-action="Delete" asp-route-id="@o.Id" method="post"
-                              class="d-inline"
-                              onsubmit="return confirm('Usunąć?');">
-                            <button class="btn btn-link p-0">Usuń</button>
-                        </form>
-                    }
+                    @(o.PaymentAmount.HasValue ? o.PaymentAmount.Value.ToString("c") : "—")
+                    </td>
+                <td class="px-4">
+                    <div class="btn-group ms-xxl-5 float-end" role="group">
+                        <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-outline-primary">Szczegóły</a>
+                        @if (!o.IsCompleted)
+                        {
+                            <a asp-action="Edit" asp-route-id="@o.Id" class="btn btn-outline-primary"> Edytuj </a>
+                        }
+                        @if (!o.IsCompleted)
+                        {
+                            <a asp-controller="Payments" asp-action="Checkout"
+                               asp-route-id="@o.Id" class="btn btn-success"> Zapłać </a>
+                        }
+                        @if (isAdmin || (!o.IsCompleted && o.IsCompleted))
+                        {
+                            <a asp-action="Delete" asp-route-id="@o.Id" method="post"
+                                  class="btn btn-danger"
+                                  onsubmit="return confirm('Usunąć?');">
+                                Usuń
+                            </a>
+                        }
+                        </div>
                 </td>
             </tr>
         }
