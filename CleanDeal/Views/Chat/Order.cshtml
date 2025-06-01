@@ -1,112 +1,51 @@
-﻿@model ChatPageViewModel  
+﻿@model IEnumerable<CleanDeal.DTOs.ChatMessageDTO>
 @{
-	ViewData["Title"] = "Czat – Twoje zamówienia";
-    var orderId = ViewBag.CurrentOrderId as string;
-	var currentUserId = ViewBag.CurrentUserId as string;
+    ViewData["Title"] = "Czat – zlecenie " + ViewBag.OrderId;
+    int orderId = ViewBag.OrderId;
 }
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-    <script>
-        function renderMessage(msg, currentUserId) {
-            const div = document.createElement("div");
-            div.className = "mb-1 " + (msg.senderId === currentUserId ? "text-end" : "text-start");
-            const sender = msg.senderName || msg.senderId || "???";
-            let time = "";
-            if (msg.sentAt) {
-                const d = new Date(msg.sentAt);
-                time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-            div.innerHTML = `
-                <span class="badge bg-secondary">${sender}</span>
-                <span class="p-2 bg-light rounded">${msg.content}</span>
-                <span class="text-muted small">${time}</span>
-            `;
-            return div;
-        }
+<h2>Czat &mdash; zlecenie #@orderId (@ViewBag.ServiceName)</h2>
 
-        const orderId = @Model.SelectedOrderId ?? null;
-        const currentUserId = '@ViewBag.CurrentUserId';
-        const receiverId = '@Model.ReceiverId';
+<ul id="messagesList" class="list-group mb-3">
+    @foreach (var m in Model)
+    {
+        <li class="list-group-item">
+            <strong>@m.UserName:</strong> @m.Content
+            <small class="text-muted float-end">@m.SentAt.ToLocalTime().ToString("HH:mm")</small>
+        </li>
+    }
+</ul>
 
-        const sendBtn = document.getElementById("sendBtn");
-        const messageInput = document.getElementById("messageInput");
-        const messagesList = document.getElementById("messagesList");
-
-        if (sendBtn && messageInput && messagesList && orderId) {
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/chatHub")
-                .build();
-
-            connection.on("ReceiveMessage", (msg) => {
-                const messageElement = renderMessage(msg, currentUserId);
-                messagesList.appendChild(messageElement);
-                messagesList.scrollTop = messagesList.scrollHeight;
-            });
-
-            connection.start().then(function () {
-                connection.invoke("JoinOrderGroup", orderId);
-                sendBtn.disabled = false;
-            }).catch(function (err) {
-                return console.error(err.toString());
-            });
-
-            sendBtn.addEventListener("click", function (event) {
-                event.preventDefault();
-                const text = messageInput.value;
-                if (!text) return;
-                connection.invoke("SendOrderMessage", orderId, text, receiverId || "")
-                    .catch(function (err) {
-                        return console.error(err.toString());
-                    });
-                messageInput.value = "";
-                messageInput.focus();
-            });
-            messageInput.addEventListener("keydown", function (e) {
-                if (e.key === "Enter") sendBtn.click();
-            });
-        }
-    </script>
-}
-
-
-<div class="row">
-	<div class="col-md-4 border-end" style="height: 80vh; overflow-y: auto;">
-		<ul class="list-group">
-			@foreach (var order in Model.Orders)
-			{
-				<li class="list-group-item d-flex align-items-center @(order.Id == Model.SelectedOrderId ? "active selected-order" : "")">
-					<a href="@Url.Action("Order", "Chat", new { id = order.Id })" 
-					   class="w-100 text-decoration-none @(order.Id == Model.SelectedOrderId ? "fw-bold text-dark" : "text-primary")">
-						<span class="fw-bold">Zamówienie #@order.Id</span><br />
-						<span class="small">@order.ServiceTypeName (@order.Date.ToShortDateString())</span>
-					</a>
-				</li>
-
-			}
-		</ul>
-	</div>
-	<div class="col-md-8" style="height: 80vh; display: flex; flex-direction: column;">
-		<div id="messagesList" class="flex-grow-1 overflow-auto mb-2">
-			@if (Model.Messages != null)
-			{
-				foreach (var m in Model.Messages)
-				{
-					<div class="mb-1 @(m.SenderId == ViewBag.CurrentUserId ? "text-end" : "text-start")">
-						<span class="badge bg-secondary">@m.SenderName</span>
-						<span class="p-2 bg-light rounded">@m.Content</span>
-						<span class="text-muted small">@m.SentAt.ToLocalTime().ToString("HH:mm")</span>
-					</div>
-				}
-			}
-			else
-			{
-				<span class="text-muted">Wybierz zamówienie...</span>
-			}
-		</div>
-		<div class="input-group">
-			<input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
-			<button id="sendBtn" class="btn btn-primary">Wyślij</button>
-		</div>
-	</div>
+<div class="input-group">
+    <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
+    <button id="sendBtn" class="btn btn-primary">Wyślij</button>
 </div>
 
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"
+            integrity="sha512-a0s4F9MGAHwwKgJ4uR8fRjPCbX2T3Bi9lABt8+7uQvZCbv97fdzSG4uY1oE+d90Vt/c9l5wBQVpfqHRFe4UTwg=="
+            crossorigin="anonymous"></script>
+    <script>
+        const orderId = @orderId;
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", (user, msg, ordId) => {
+            if (ordId !== orderId) return;              
+            const li = document.createElement("li");
+            li.className = "list-group-item";
+            li.innerHTML = `<strong>${user}:</strong> ${msg}
+                <small class="text-muted float-end">${new Date().toLocaleTimeString()}</small>`;
+            document.getElementById("messagesList").appendChild(li);
+        });
+
+        connection.start();
+
+        document.getElementById("sendBtn").addEventListener("click", () => {
+            const txt = document.getElementById("messageInput");
+            if (!txt.value) return;
+            connection.invoke("SendMessage", "@User.Identity!.Name", txt.value, orderId);
+            txt.value = "";
+        });
+    </script>
+}

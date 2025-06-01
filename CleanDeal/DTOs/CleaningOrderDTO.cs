@@ -7,14 +7,8 @@
         public string Address { get; set; } = string.Empty;
         public bool IsCompleted { get; set; }
 
-        public string ServiceTypeName { get; set; } = string.Empty;
-
-        public string UserName { get; set; }
+        public string ServiceTypeName { get; set; } = string.Empty;  
         public string UserEmail { get; set; } = string.Empty;
-        
-        public string? CleanerName { get; set; }
-        public string? CleanerEmail { get; set; }
-
         public bool IsPaid => PaymentAmount.HasValue;
         public decimal? PaymentAmount { get; set; }
         public bool HasReview { get; set; }

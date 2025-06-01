@@ -7,36 +7,25 @@ namespace CleanDeal.Mapping
 {
     public class MappingProfile: Profile
     {
-        public MappingProfile()
-        {
+        public MappingProfile() {
             CreateMap<CleaningOrder, CleaningOrderDTO>()
-                .ForMember(d => d.ServiceTypeName, o => o.MapFrom(s => s.ServiceType.Name))
-                .ForMember(d => d.PaymentAmount, o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
-                .ForMember(d => d.HasReview, o => o.MapFrom(s => s.Review != null))
-                .ForMember(d => d.ReviewRating, o => o.MapFrom(s => s.Review != null ? (int?)s.Review.Rating : null))
-                .ForMember(dest => dest.CleanerName, opt => opt.MapFrom(src => src.AssignedCleaner != null ? src.AssignedCleaner.FullName : null))
-                .ForMember(dest => dest.CleanerEmail, opt => opt.MapFrom(src => src.AssignedCleaner != null ? src.AssignedCleaner.Email : null));
-
+               .ForMember(d => d.ServiceTypeName, o => o.MapFrom(s => s.ServiceType.Name))
+               .ForMember(d => d.PaymentAmount, o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
+               .ForMember(d => d.HasReview, o => o.MapFrom(s => s.Review != null))
+               .ForMember(d => d.ReviewRating, o => o.MapFrom(s => s.Review != null ? (int?)s.Review.Rating : null));
 
             CreateMap<CleaningOrder, OrderCreateViewModel>()
                 .ForMember(d => d.ServiceTypeOptions, o => o.Ignore());
 
             CreateMap<Payment, PaymentDTO>();
 
-            CreateMap<CleaningOrder, OrderListDTO>()
-                .ForMember(dest => dest.ServiceTypeName, opt => opt.MapFrom(src => src.ServiceType.Name));
-
-
-            CreateMap<ChatMessage, ChatMessageDTO>()
-                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.UserName))
-                .ForMember(dest => dest.ReceiverName, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver.UserName : null));
+            CreateMap<ChatMessage, ChatMessageDTO>().ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
 
             CreateMap<Review, ReviewDTO>();
 
             CreateMap<OrderCreateViewModel, CleaningOrder>()
                 .ForMember(co => co.ServiceType, opt => opt.Ignore())  
-                .ForMember(co => co.User, opt => opt.Ignore())
-
+                .ForMember(co => co.User, opt => opt.Ignore())        
                 .ForMember(co => co.Payment, opt => opt.Ignore())
                 .ForMember(co => co.Review, opt => opt.Ignore())
                 .ForMember(co => co.ChatMessages, opt => opt.Ignore());

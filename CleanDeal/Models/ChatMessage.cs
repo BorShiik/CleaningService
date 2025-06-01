@@ -9,10 +9,7 @@
         public int CleaningOrderId { get; set; }
         public CleaningOrder CleaningOrder { get; set; } = null!;
 
-        public string SenderId { get; set; } = null!;
-        public ApplicationUser Sender{ get; set; } = null!;
-
-        public string? ReceiverId { get; set; }
-        public ApplicationUser? Receiver { get; set; }
+        public string UserId { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
     }
 }

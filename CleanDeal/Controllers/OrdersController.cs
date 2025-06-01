@@ -87,12 +87,10 @@ namespace CleanDeal.Controllers
             {
                 return NotFound();
             }
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isClient = order.UserId == userId;
-            var isCleaner = order.AssignedCleanerId == userId;
-            if (!User.IsInRole("Admin") && !isClient && !isCleaner)
+            if (!User.IsInRole("Admin") && order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
                 return Forbid();
-
+            }
 
             var orderDto = _mapper.Map<CleaningOrderDTO>(order);
             return View(orderDto);
@@ -103,12 +101,9 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(id);
             if (order == null) return NotFound();
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isClient = order.UserId == userId;
-            var isCleaner = order.AssignedCleanerId == userId;
-            if (!User.IsInRole("Admin") && !isClient && !isCleaner)
+            if (!User.IsInRole("Admin") &&
+                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
-
 
             if (order.IsCompleted)
             {
@@ -146,12 +141,9 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(id);
             if (order == null) return NotFound();
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isClient = order.UserId == userId;
-            var isCleaner = order.AssignedCleanerId == userId;
-            if (!User.IsInRole("Admin") && !isClient && !isCleaner)
+            if (!User.IsInRole("Admin") &&
+                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
-
 
             if (order.IsCompleted)
             {
@@ -174,12 +166,9 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(id);
             if (order == null) return NotFound();
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isClient = order.UserId == userId;
-            var isCleaner = order.AssignedCleanerId == userId;
-            if (!User.IsInRole("Admin") && !isClient && !isCleaner)
+            if (!User.IsInRole("Admin") &&
+                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
-
 
             if (order.IsCompleted || order.Payment != null)
             {
@@ -198,12 +187,9 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(id);
             if (order == null) return NotFound();
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isClient = order.UserId == userId;
-            var isCleaner = order.AssignedCleanerId == userId;
-            if (!User.IsInRole("Admin") && !isClient && !isCleaner)
+            if (!User.IsInRole("Admin") &&
+                order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
-
 
             if (order.IsCompleted || order.Payment != null)
             {
@@ -215,26 +201,5 @@ namespace CleanDeal.Controllers
             TempData["Message"] = "Zamówienie usunięto.";
             return RedirectToAction(nameof(Index));
         }
-
-        [Authorize(Roles = "Cleaner")]
-        public async Task<IActionResult> TakeOrder(int id)
-        {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return NotFound();
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (order.AssignedCleanerId != null)
-            {
-                TempData["Error"] = "Zlecenie już zostało przyjęte przez innego sprzątacza.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            order.AssignedCleanerId = userId;
-            await _orderRepo.UpdateAsync(order);
-            TempData["Message"] = "Przyjąłeś zlecenie!";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
     }
 }

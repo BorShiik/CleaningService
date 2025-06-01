@@ -20,9 +20,6 @@ namespace CleanDeal.Models
         public string UserId { get; set; } = null!;
         public ApplicationUser User { get; set; } = null!;
 
-        public string? AssignedCleanerId { get; set; }
-        public ApplicationUser? AssignedCleaner { get; set; }
-
         public Payment? Payment { get; set; }
         public Review? Review { get; set; }
         public ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
