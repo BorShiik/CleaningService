@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 using CleanDeal.Data;
 using CleanDeal.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Stripe.Climate;
 
 namespace CleanDeal.Data
 {
@@ -107,13 +109,16 @@ namespace CleanDeal.Data
                 };
                 context.Payments.Add(payment);
 
-                context.ChatMessages.Add(new ChatMessage
+                var chatMessage = new ChatMessage
                 {
                     CleaningOrderId = order.Id,
-                    UserId = client.Id,
-                    Content = "Proszę zwrócić uwagę na kuchnię.",
+                    Content = "Hello, your cleaner is on the way!",
+                    SenderId = client.Id,         
+                    ReceiverId = admin.Id,       
                     SentAt = DateTime.UtcNow
-                });
+                };
+
+                context.ChatMessages.Add(chatMessage);
 
                 await context.SaveChangesAsync();
             }

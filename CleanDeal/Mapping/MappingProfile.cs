@@ -37,7 +37,9 @@ namespace CleanDeal.Mapping
 
             CreateMap<Payment, PaymentDTO>();
 
-            CreateMap<ChatMessage, ChatMessageDTO>().ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName));
+            CreateMap<ChatMessage, ChatMessageDTO>()
+                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.UserName))
+                .ForMember(dest => dest.ReceiverName, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver.UserName : null));
 
             CreateMap<Review, ReviewDTO>();
 

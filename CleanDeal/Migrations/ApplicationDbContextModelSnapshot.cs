@@ -4,19 +4,16 @@ using CleanDeal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CleanDeal.Data.Migrations
+namespace CleanDeal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250531224639_InitialClean")]
-    partial class InitialClean
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,7 +43,8 @@ namespace CleanDeal.Data.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -109,18 +107,23 @@ namespace CleanDeal.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ReceiverId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("SenderId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CleaningOrderId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
 
                     b.ToTable("ChatMessages");
                 });
@@ -138,6 +141,9 @@ namespace CleanDeal.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("CleanerId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -147,11 +153,17 @@ namespace CleanDeal.Data.Migrations
                     b.Property<int>("ServiceTypeId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CleanerId");
 
                     b.HasIndex("ServiceTypeId");
 
@@ -381,22 +393,34 @@ namespace CleanDeal.Data.Migrations
                     b.HasOne("CleanDeal.Models.CleaningOrder", "CleaningOrder")
                         .WithMany("ChatMessages")
                         .HasForeignKey("CleaningOrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CleanDeal.Models.ApplicationUser", "User")
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("CleanDeal.Models.ApplicationUser", "Receiver")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CleanDeal.Models.ApplicationUser", "Sender")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("CleaningOrder");
 
-                    b.Navigation("User");
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("CleanDeal.Models.CleaningOrder", b =>
                 {
+                    b.HasOne("CleanDeal.Models.ApplicationUser", "Cleaner")
+                        .WithMany("CleanerOrders")
+                        .HasForeignKey("CleanerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("CleanDeal.Models.ServiceType", "ServiceType")
                         .WithMany("CleaningOrders")
                         .HasForeignKey("ServiceTypeId")
@@ -408,6 +432,8 @@ namespace CleanDeal.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Cleaner");
 
                     b.Navigation("ServiceType");
 
@@ -493,11 +519,15 @@ namespace CleanDeal.Data.Migrations
 
             modelBuilder.Entity("CleanDeal.Models.ApplicationUser", b =>
                 {
-                    b.Navigation("ChatMessages");
+                    b.Navigation("CleanerOrders");
 
                     b.Navigation("CleaningOrders");
 
+                    b.Navigation("ReceivedMessages");
+
                     b.Navigation("Reviews");
+
+                    b.Navigation("SentMessages");
                 });
 
             modelBuilder.Entity("CleanDeal.Models.CleaningOrder", b =>

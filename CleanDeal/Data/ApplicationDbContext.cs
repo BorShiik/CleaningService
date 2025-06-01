@@ -40,10 +40,16 @@ namespace CleanDeal.Data
                .OnDelete(DeleteBehavior.Cascade);
 
             b.Entity<ChatMessage>()
-               .HasOne(m => m.CleaningOrder)
-               .WithMany(o => o.ChatMessages)
-               .HasForeignKey(m => m.CleaningOrderId)
-               .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(m => m.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<ChatMessage>()
+                .HasOne(m => m.Receiver)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(m => m.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<Review>()
                .HasOne(r => r.CleaningOrder)
