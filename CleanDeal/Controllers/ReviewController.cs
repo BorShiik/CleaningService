@@ -38,7 +38,7 @@ namespace CleanDeal.Controllers
             if (!User.IsInRole("Admin") && order.UserId != userId)
                 return Forbid();
 
-            if (!order.IsCompleted)
+            if (order.Status != OrderStatus.Finished)
             {
                 TempData["Error"] = "Najpierw oznacz zlecenie jako zakończone.";
                 return RedirectToAction("Details", "Orders", new { id = orderId });

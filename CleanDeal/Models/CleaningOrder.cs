@@ -23,7 +23,7 @@ namespace CleanDeal.Models
 
         public int ServiceTypeId { get; set; }
         public ServiceType ServiceType { get; set; } = null!;
-
+        public decimal? TotalPrice => ServiceType.BasePrice;
         public string UserId { get; set; } = null!;
         public ApplicationUser User { get; set; } = null!;
         public string? CleanerId { get; set; }

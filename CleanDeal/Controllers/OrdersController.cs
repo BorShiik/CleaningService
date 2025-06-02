@@ -106,7 +106,7 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted)
+            if (order.Status == OrderStatus.Finished)
             {
                 TempData["Error"] = "Nie można edytować zakończonego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });
@@ -146,7 +146,7 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted)
+            if (order.Status == OrderStatus.Finished)
             {
                 TempData["Error"] = "Nie można edytować zakończonego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });
@@ -171,7 +171,7 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted || order.Payment != null)
+            if (order.Status == OrderStatus.Finished || order.Payment != null)
             {
                 TempData["Error"] = "Nie można usunąć zakończonego lub opłaconego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });
@@ -192,7 +192,7 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted || order.Payment != null)
+            if (order.Status == OrderStatus.Finished || order.Payment != null)
             {
                 TempData["Error"] = "Nie można usunąć zakończonego lub opłaconego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });
