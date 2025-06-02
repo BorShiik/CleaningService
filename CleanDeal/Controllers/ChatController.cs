@@ -1,15 +1,18 @@
-﻿using AutoMapper;
-using CleanDeal.DTOs;
-using CleanDeal.Models;
+﻿using CleanDeal.DTOs;
 using CleanDeal.Repositories;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Linq;
+using System.Threading.Tasks;
+using CleanDeal.Models;
+using CleanDeal.ViewModel;
 
 namespace CleanDeal.Controllers
 {
     [Authorize]
-    public class ChatController: Controller
+    public class ChatController : Controller
     {
         private readonly ICleaningOrderRepository _orderRepo;
         private readonly IChatMessageRepository _chatRepo;
@@ -21,54 +24,33 @@ namespace CleanDeal.Controllers
             _chatRepo = chatRepo;
             _mapper = mapper;
         }
-        public async Task<IActionResult> Order(int id)
-        {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return NotFound();
 
+        public async Task<IActionResult> Order(int? id)
+        {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isCleaner = User.IsInRole("Cleaner") && order.UserId != userId;
-            if (!User.IsInRole("Admin") && order.UserId != userId && !isCleaner)
-                return Forbid();
 
-            var messages = await _chatRepo.GetMessagesForOrderAsync(id);
-            var dto = _mapper.Map<IEnumerable<ChatMessageDTO>>(messages);
+            IEnumerable<CleaningOrder> orders;
+            if (User.IsInRole("Cleaner"))
+                orders = await _orderRepo.GetByCleanerAsync(userId);
+            else
+                orders = await _orderRepo.GetByUserIdAsync(userId);
 
-            ViewBag.OrderId = id;
-            ViewBag.ServiceName = order.ServiceType.Name;
+            int selectedOrderId = id ?? orders.FirstOrDefault()?.Id ?? 0;
+            var messages = await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);
 
-            return View(dto);                         // Views/Chat/Order.cshtml
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetMessages(int orderId)
-        {
-            var msgs = await _chatRepo.GetMessagesForOrderAsync(orderId);
-            var dto = _mapper.Map<IEnumerable<ChatMessageDTO>>(msgs);
-            return Json(dto);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> PostMessage(int orderId, string content)
-        {
-            if (string.IsNullOrWhiteSpace(content)) return BadRequest("Treść wiadomości pusta.");
-
-            var order = await _orderRepo.GetByIdAsync(orderId);
-            if (order == null) return NotFound();
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!User.IsInRole("Admin") && order.UserId != userId)
-                return Forbid();
-
-            var message = new ChatMessage
+            var vm = new ChatPageViewModel
             {
-                CleaningOrderId = orderId,
-                Content = content,
-                UserId = userId,
-                SentAt = DateTime.UtcNow
+                Orders = orders.ToList(),
+                SelectedOrderId = selectedOrderId,
+                Messages = _mapper.Map<List<ChatMessageDTO>>(messages),
+                ReceiverId = null
             };
-            await _chatRepo.AddAsync(message);
-            return Ok();                               
+
+            ViewBag.CurrentUserId = userId;
+            ViewBag.CurrentOrderId = selectedOrderId.ToString();
+            return View(vm);
         }
+
+
     }
 }
