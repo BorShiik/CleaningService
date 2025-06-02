@@ -3,6 +3,7 @@
     ViewData["Title"] = "Czat – Twoje zamówienia";
     var orderId = ViewBag.CurrentOrderId as string;
     var currentUserId = ViewBag.CurrentUserId as string;
+    bool isAdmin = User.IsInRole("Admin");
 }
 
 @section Scripts {
@@ -92,7 +93,14 @@
                 foreach (var m in Model.Messages)
                 {
                     <div class="mb-1 @(m.SenderId == ViewBag.CurrentUserId ? "text-end" : "text-start")">
-                        <span class="badge bg-secondary">@m.SenderName</span>
+                        @if (m.SenderName == "admin@cleaning.local")
+                        {
+                            <span class="badge bg-danger">@m.SenderName</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@m.SenderName</span>
+                        }
                         <span class="p-2 bg-light rounded">@m.Content</span>
                         <span class="text-muted small">@m.SentAt.ToLocalTime().ToString("HH:mm")</span>
                     </div>
