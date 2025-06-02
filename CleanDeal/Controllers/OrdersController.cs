@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace CleanDeal.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Client,Admin")]
     public class OrdersController: Controller
     {
         private readonly ICleaningOrderRepository _orderRepo;

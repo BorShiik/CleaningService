@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Moje zlecenia";
     bool isAdmin = User.IsInRole("Admin");
+    bool isClient = User.IsInRole("Client");
 }
 <h2>@ViewData["Title"]</h2>
 
@@ -48,12 +49,16 @@
                 </td>
                 <td class="px-4">
                     <div class="btn-group ms-xxl-5 float-end" role="group">
+                        @if (isAdmin)
+                        {
+                        <a class="btn btn-primary"  asp-controller="Chat"  asp-action="Order" asp-route-id="@o.Id" >Czat</a>
+                        }
                         <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-outline-primary">Szczegóły</a>
                         @if (o.Status != "Ukończone")
                         {
                             <a asp-action="Edit" asp-route-id="@o.Id" class="btn btn-outline-primary"> Edytuj </a>
                         }
-                        @if (!o.IsPaid)
+                        @if (!o.IsPaid && isClient)
                         {
                             <a asp-controller="Payments" asp-action="Checkout"
                                asp-route-id="@o.Id" class="btn btn-success"> Zapłać </a>
@@ -61,12 +66,12 @@
                         @if (isAdmin || (!o.IsCompleted && o.IsCompleted))
                         {
                             <a asp-action="Delete" asp-route-id="@o.Id" method="post"
-                                  class="btn btn-danger"
-                                  onsubmit="return confirm('Usunąć?');">
+                               class="btn btn-danger"
+                               onsubmit="return confirm('Usunąć?');">
                                 Usuń
                             </a>
                         }
-                        </div>
+                    </div>
                 </td>
             </tr>
         }
