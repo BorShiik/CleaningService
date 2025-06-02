@@ -28,23 +28,32 @@
                 <td>@o.Date.ToString("g")</td>
                 <td>@o.ServiceTypeName</td>
                 <td>
-                    @(o.IsCompleted ? "Zakończone" : "W toku")
-                    @if (o.IsCompleted)
+                    @(o.Status switch
+                    {
+                        "Ukończone" => "Ukończone",
+                        "Oczekuje" => "Oczekuje",
+                        _ => "W toku"
+                    })
+                    @if (o.IsPaid)
                     {
                         <span class="badge bg-success ms-1">Opłacone</span>
                     }
+                    else
+                    {
+                        <span class="badge bg-danger ms-1">Nie opłacone</span>
+                    }
                 </td>
                 <td>
-                    @(o.PaymentAmount.HasValue ? o.PaymentAmount.Value.ToString("c") : "—")
-                    </td>
+                    @(o.TotalPrice ?? 0)
+                </td>
                 <td class="px-4">
                     <div class="btn-group ms-xxl-5 float-end" role="group">
                         <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-outline-primary">Szczegóły</a>
-                        @if (!o.IsCompleted)
+                        @if (o.Status != "Ukończone")
                         {
                             <a asp-action="Edit" asp-route-id="@o.Id" class="btn btn-outline-primary"> Edytuj </a>
                         }
-                        @if (!o.IsCompleted)
+                        @if (!o.IsPaid)
                         {
                             <a asp-controller="Payments" asp-action="Checkout"
                                asp-route-id="@o.Id" class="btn btn-success"> Zapłać </a>

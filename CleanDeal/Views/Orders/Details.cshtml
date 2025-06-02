@@ -17,16 +17,26 @@
 
     <dt class="col-sm-3">Status</dt>
     <dd class="col-sm-9">
-        @(Model.IsCompleted ? "Zakończone" : "W toku")
+        @(Model.Status switch
+         {
+             "Ukończone" => "Ukończone",
+             "Oczekuje" => "Oczekuje",
+             _ => "W toku"
+         })
         @if (Model.IsPaid)
         {
             <span class="badge bg-success ms-1">Opłacone</span>
+        }
+        else
+        {
+            <span class="badge bg-danger ms-1">Nie opłacone</span>
         }
     </dd>
 
     <dt class="col-sm-3">Kwota</dt>
     <dd class="col-sm-9">
-        @(Model.PaymentAmount?.ToString("c") ?? "—")
+        @*(Model.PaymentAmount?.ToString("c") ?? "—")*@
+        @(Model.TotalPrice ?? 0)
     </dd>
     <dt class="col-sm-3">Ocena klienta</dt>
     <dd class="col-sm-9">
@@ -34,7 +44,7 @@
     </dd>
 </dl>
 
-@if (!Model.IsCompleted)
+@if (Model.Status != "Ukończone")
 {
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
 }
@@ -43,7 +53,7 @@
     <a asp-controller="Payments" asp-action="Checkout"
        asp-route-id="@Model.Id" class="btn btn-success ms-2">Zapłać</a>
 }
-@if (!Model.HasReview && Model.IsCompleted)
+@if (!Model.HasReview && Model.Status == "Ukończone")
 {
     <a asp-controller="Review" asp-action="Create"
        asp-route-orderId="@Model.Id" class="btn btn-warning ms-2">Oceń usługę</a>

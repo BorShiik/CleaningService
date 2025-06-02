@@ -76,5 +76,34 @@ namespace CleanDeal.Repositories
             _context.CleaningOrders.Update(order);
             await _context.SaveChangesAsync();
         }
+  
+        public async Task<IEnumerable<CleaningOrder>> GetAvailableAsync() =>
+        await _context.CleaningOrders
+            .Include(o => o.ServiceType)
+            .Where(o => o.Status == OrderStatus.WaitingForCleaner)
+            .ToListAsync();
+
+        public async Task<IEnumerable<CleaningOrder>> GetByCleanerAsync(string cleanerId) =>
+            await _context.CleaningOrders
+                .Include(o => o.ServiceType)
+                .Where(o => o.CleanerId == cleanerId)
+                .ToListAsync();
+
+        public async Task AcceptAsync(int id, string cleanerId)
+        {
+            var o = await _context.CleaningOrders.FindAsync(id);
+            if (o is null || o.Status != OrderStatus.WaitingForCleaner) return;
+            o.Status = OrderStatus.InProcess;
+            o.CleanerId = cleanerId;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task CompleteAsync(int id, string cleanerId)
+        {
+            var o = await _context.CleaningOrders.FindAsync(id);
+            if (o is null || o.CleanerId != cleanerId) return;
+            o.Status = OrderStatus.Finished;
+            await _context.SaveChangesAsync();
+        }
     }
 }

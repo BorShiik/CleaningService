@@ -1,4 +1,5 @@
 using CleanDeal.Data;
+using CleanDeal.Hubs;
 using CleanDeal.Repositories;
 using CleanDeal.Models;
 using Microsoft.AspNetCore.Identity;
@@ -16,6 +17,8 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 builder.Services.AddDbContext<CleanDeal.Data.ApplicationDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 {
@@ -78,6 +81,6 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 // SignalR Hub
-//app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

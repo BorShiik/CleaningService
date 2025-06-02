@@ -42,7 +42,7 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Products" asp-action="Index">Produkty</a>
                         </li>
-                        @if (isAuth)
+                        @if (isAuth && !isCleaner)
                         {
                             <li class="nav-item">
                                 @if (isAdmin)
@@ -59,6 +59,13 @@
                                 <a class="nav-link" asp-controller="Chat" asp-action="Order" asp-route-id="0">Czat</a>
                             </li>
                         }
+                        @if (isCleaner)
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="CleanerOrders" asp-action="Available">Wolne zlecenia</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="CleanerOrders" asp-action="My">Moje zlecenia</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Chat" asp-action="Order" asp-route-id="0">Czat</a></li>
+                        }
+
                         @if (isAdmin)
                         {
                             <li class="nav-item">
