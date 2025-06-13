@@ -5,6 +5,10 @@
     var isAuth = SignInManager.IsSignedIn(User);
     var isAdmin = User.IsInRole("Admin");
     var isCleaner = User.IsInRole("Cleaner");
+    var currentUser = UserManager.GetUserAsync(User)
+	    .GetAwaiter().GetResult();
+    string fullName = currentUser?.FullName ?? User.Identity?.Name;
+
     Layout = null;
 }
 <!DOCTYPE html>
@@ -82,7 +86,7 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="userMenu"
                                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    @User.Identity!.Name
+                                    @fullName
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                     <li>

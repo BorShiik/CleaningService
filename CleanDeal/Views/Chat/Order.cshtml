@@ -93,7 +93,7 @@
                 foreach (var m in Model.Messages)
                 {
                     <div class="mb-1 @(m.SenderId == ViewBag.CurrentUserId ? "text-end" : "text-start")">
-                        @if (m.SenderName == "admin@cleaning.local")
+                        @if (m.SenderName == "Admin" || m.SenderName == "Administrator")
                         {
                             <span class="badge bg-danger">@m.SenderName</span>
                         }
