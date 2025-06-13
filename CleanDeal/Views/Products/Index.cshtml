@@ -16,13 +16,12 @@
         <tr>
             <th>Nazwa</th>
             <th>Cena</th>
-            <th>Ilość</th>
-            @if (isAdmin)
+            <th>Dostępne</th>
+            @if (!isAdmin)
             {
-                <th></th>
-            }
-            @if (isCleaner)
-            {
+                <th>Dodaj</th>
+            }else 
+            { 
                 <th></th>
             }
         </tr>
@@ -34,6 +33,7 @@
                 <td>@p.Name</td>
                 <td>@p.Price</td>
                 <td>@p.StockQuantity</td>
+
                 @if (isAdmin)
                 {
                     <td>
@@ -44,9 +44,10 @@
                 @if (isCleaner)
                 {
                     <td>
-                        <form asp-controller="Cart" asp-action="Add" method="post">
+                        <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex">
                             <input type="hidden" name="id" value="@p.Id" />
-                            <button type="submit" class="btn btn-sm btn-primary">Do koszyka</button>
+                            <input type="number" name="qty" value="1" min="1" class="form-control form-control-sm me-1" style="width:80px;" />
+                            <button type="submit" class="btn btn-sm btn-success ms-5">Do koszyka</button>
                         </form>
                     </td>
                 }

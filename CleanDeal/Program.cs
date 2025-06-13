@@ -44,6 +44,20 @@ builder.Services.AddSignalR();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+var urls = builder.Configuration["ASPNETCORE_URLS"]?.Split(';').FirstOrDefault() ?? "http://localhost:5000";
+var port = new Uri(urls).Port;
+
+builder.Services.ConfigureApplicationCookie(o =>
+{
+    o.Cookie.Name = $".CleanDeal.Auth{port}";
+});
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(o =>
+{
+    o.Cookie.Name = $".CleanDeal.Session{port}";
+});
+
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();

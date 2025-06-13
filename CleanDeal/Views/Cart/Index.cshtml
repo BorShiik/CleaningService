@@ -1,22 +1,23 @@
-﻿@model IEnumerable<(CleanDeal.Models.Product Product, int Quantity)>
+﻿@model IEnumerable<CleanDeal.ViewModel.CartItemViewModel>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
 @{
     ViewData["Title"] = "Koszyk";
-    var total = Model.Sum(i => i.Product.Price * i.Quantity);
+    var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
 }
-<h2>@ViewData["Title"]</h2>
+<h2>Koszyk</h2>
 @if (!Model.Any())
 {
-    <p>Twój koszyk jest pusty.</p>
+    <p>Koszyk jest pusty.</p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Nazwa</th>
-                <th>Cena</th>
+                <th>Produkt</th>
                 <th>Ilość</th>
-                <th>Suma</th>
+                <th>Cena</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -24,15 +25,44 @@ else
             {
                 <tr>
                     <td>@item.Product.Name</td>
-                    <td>@item.Product.Price</td>
                     <td>@item.Quantity</td>
                     <td>@(item.Product.Price * item.Quantity)</td>
+                    <td>
+                        <form asp-action="Remove" method="post">
+                            <input type="hidden" name="id" value="@item.Product.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger">Usuń</button>
+                        </form>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
-    <p><strong>Łącznie: @total</strong></p>
-    <form asp-action="Clear" method="post">
-        <button type="submit" class="btn btn-danger">Wyczyść</button>
-    </form>
+    <p><strong>Razem:</strong> @ViewBag.Total.ToString("c")</p>
+    <button id="payBtn" class="btn btn-success">Zapłać</button>
+    <span id="error" class="text-danger ms-2"></span>
+}
+@section Scripts {
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+const payBtn = document.getElementById("payBtn");
+const errorEl = document.getElementById("error");
+if (payBtn) {
+    payBtn.addEventListener("click", async () => {
+        payBtn.disabled = true;
+        try {
+            const resp = await fetch("@Url.Action("Checkout","Cart")", {
+                method: "POST",
+                headers: { "RequestVerificationToken": "@csrf" }
+            });
+            if (!resp.ok) throw new Error(await resp.text());
+            const { id, key } = await resp.json();
+            const stripe = Stripe(key);
+            await stripe.redirectToCheckout({ sessionId: id });
+        } catch (e) {
+            errorEl.textContent = e.message ?? e;
+            payBtn.disabled = false;
+        }
+    });
+}
+    </script>
 }
