@@ -1,7 +1,10 @@
-﻿using CleanDeal.Models;
+﻿using AutoMapper;
+using CleanDeal.DTOs;
+using CleanDeal.Models;
 using CleanDeal.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stripe.Checkout;
 using System.Security.Claims;
 
@@ -13,11 +16,13 @@ namespace CleanDeal.Controllers
         private readonly IConfiguration _cfg;
         private readonly ICleaningOrderRepository _orderRepo;
         private readonly IPaymentRepository _paymentRepo;
-        public PaymentsController(IConfiguration cfg, ICleaningOrderRepository orderRepo, IPaymentRepository paymentRepo)
+        private readonly IMapper _mapper;
+        public PaymentsController(IConfiguration cfg, ICleaningOrderRepository orderRepo, IPaymentRepository paymentRepo, IMapper mapper)
         {
             _cfg = cfg;
             _orderRepo = orderRepo;
             _paymentRepo = paymentRepo;
+            _mapper = mapper;
         }
 
         public async Task<IActionResult> Checkout(int id)
@@ -39,7 +44,9 @@ namespace CleanDeal.Controllers
             ViewBag.OrderId = id;
             ViewBag.AmountDisplay = CalculateAmount(order) / 100m;
 
-            return View(order);    // Views/Payments/Checkout.cshtml
+            var dto = _mapper.Map<CleaningOrderDTO>(order);
+
+            return View(dto);    // Views/Payments/Checkout.cshtml
         }
 
         [HttpPost]
@@ -48,7 +55,7 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(orderId);
             if (order == null) return NotFound();
 
-            long amount = CalculateAmount(order);
+             long amount = CalculateAmount(order);
 
             var options = new SessionCreateOptions
             {
@@ -93,7 +100,7 @@ namespace CleanDeal.Controllers
             {
                 await _paymentRepo.AddAsync(new Payment
                 {
-                    Amount = CalculateAmount(order) / 100m,
+                    Amount = CalculateAmount(order),
                     PaymentDate = DateTime.UtcNow,
                     CleaningOrderId = orderId
                 });
@@ -109,14 +116,7 @@ namespace CleanDeal.Controllers
             return RedirectToAction("Details", "Orders", new { id = orderId });
         }
 
-        private static long CalculateAmount(CleaningOrder order) =>
-            order.ServiceTypeId switch
-            {
-                1 => 200_00,     
-                2 => 150_00,
-                3 => 100_00,
-                _ => 180_00
-            };
+        private static long CalculateAmount(CleaningOrder order) => (long)Math.Round(order.TotalPrice * 100m ?? 0);
     }
 }
 

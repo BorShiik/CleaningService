@@ -1,4 +1,4 @@
-﻿@model CleanDeal.Models.CleaningOrder
+﻿@model CleanDeal.DTOs.CleaningOrderDTO
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
 @{
 	ViewData["Title"] = "Płatność";
@@ -7,7 +7,7 @@
 <h2>Podsumowanie płatności</h2>
 
 <p>
-	Usługa: <strong>@Model.ServiceType.Name</strong><br />
+	Usługa: <strong>@Model.ServiceTypeName</strong><br />
 	Kwota do zapłaty: <strong>@ViewBag.AmountDisplay.ToString("c")</strong>
 </p>
 

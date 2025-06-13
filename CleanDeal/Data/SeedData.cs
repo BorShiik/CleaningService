@@ -111,8 +111,8 @@ namespace CleanDeal.Data
                 {
                     CleaningOrderId = order.Id,
                     Content = "Hello, your cleaner is on the way!",
-                    SenderId = client.Id,         
-                    ReceiverId = admin.Id,       
+                    SenderId = admin.Id,         
+                    ReceiverId = client.Id,       
                     SentAt = DateTime.UtcNow
                 };
 
