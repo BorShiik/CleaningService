@@ -38,7 +38,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-//builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();

@@ -1,0 +1,42 @@
+﻿@model IEnumerable<CleanDeal.DTOs.ProductDTO>
+@{
+    ViewData["Title"] = "Produkty";
+    bool isAdmin = User.IsInRole("Admin");
+}
+<h2>@ViewData["Title"]</h2>
+@if (isAdmin)
+{
+    <p>
+        <a class="btn btn-success" asp-action="Create">Dodaj produkt</a>
+    </p>
+}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Nazwa</th>
+            <th>Cena</th>
+            <th>Ilość</th>
+            @if (isAdmin)
+            {
+                <th></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Name</td>
+                <td>@p.Price</td>
+                <td>@p.StockQuantity</td>
+                @if (isAdmin)
+                {
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-primary">Edytuj</a>
+                        <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-danger">Usuń</a>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

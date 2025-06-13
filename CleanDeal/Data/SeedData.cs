@@ -61,18 +61,16 @@ namespace CleanDeal.Data
                 await context.SaveChangesAsync();
             }
 
-          /*  //-------------------------------------------------
-            // 4.  Produkty demo
-            //-------------------------------------------------
+            
             if (!await context.Products.AnyAsync())
             {
                 await context.Products.AddRangeAsync(
-                    new Product { Name = "Uniwersalny płyn", Price = 10, StockQuantity = 200 },
-                    new Product { Name = "Ściereczka mikrofibra", Price = 4, StockQuantity = 500 },
-                    new Product { Name = "Worki na śmieci 60 l", Price = 12, StockQuantity = 150 }
+                    new Models.Product { Name = "Uniwersalny płyn", Price = 10, StockQuantity = 200 },
+                    new Models.Product { Name = "Ściereczka mikrofibra", Price = 4, StockQuantity = 500 },
+                    new Models.Product { Name = "Worki na śmieci 60 l", Price = 12, StockQuantity = 150 }
                 );
                 await context.SaveChangesAsync();
-            }*/
+            }
 
             if (!await context.CleaningOrders.AnyAsync())
             {

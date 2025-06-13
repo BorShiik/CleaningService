@@ -1,0 +1,16 @@
+﻿@model CleanDeal.DTOs.ProductDTO
+@{
+    ViewData["Title"] = "Usuń produkt";
+}
+<h2>@ViewData["Title"]</h2>
+<h4>Czy na pewno chcesz usunąć ten produkt?</h4>
+<div>
+    <h5>@Model.Name</h5>
+    <p>Cena: @Model.Price</p>
+    <p>Ilość: @Model.StockQuantity</p>
+</div>
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Usuń</button>
+    <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+</form>

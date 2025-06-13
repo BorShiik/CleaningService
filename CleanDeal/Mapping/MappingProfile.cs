@@ -38,6 +38,8 @@ namespace CleanDeal.Mapping
                 .ForMember(d => d.CanComplete, o => o.MapFrom(s => s.Status == OrderStatus.InProcess));
 
             CreateMap<Payment, PaymentDTO>();
+            CreateMap<Product, ProductDTO>();
+            CreateMap<ProductDTO, Product>();
 
             CreateMap<ChatMessage, ChatMessageDTO>()
                 .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.UserName))

@@ -15,6 +15,7 @@ namespace CleanDeal.Data
         public DbSet<Payment> Payments => Set<Payment>();
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
         public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<Product> Products => Set<Product>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -22,6 +23,7 @@ namespace CleanDeal.Data
 
             b.Entity<Payment>().Property(p => p.Amount).HasPrecision(18, 2);
             b.Entity<ServiceType>().Property(s => s.BasePrice).HasPrecision(18, 2);
+            b.Entity<Product>().Property(p => p.Price).HasPrecision(18, 2);
 
             b.Entity<CleaningOrder>()
                 .Property(o => o.Status)

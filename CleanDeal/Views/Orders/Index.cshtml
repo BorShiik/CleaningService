@@ -51,7 +51,7 @@
                     <div class="btn-group ms-xxl-5 float-end" role="group">
                         @if (isAdmin)
                         {
-                        <a class="btn btn-primary"  asp-controller="Chat"  asp-action="Order" asp-route-id="@o.Id" >Czat</a>
+                            <a class="btn btn-primary" asp-controller="Chat" asp-action="Order" asp-route-id="@o.Id">Czat</a>
                         }
                         <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-outline-primary">Szczegóły</a>
                         @if (o.Status != "Ukończone")
@@ -63,7 +63,7 @@
                             <a asp-controller="Payments" asp-action="Checkout"
                                asp-route-id="@o.Id" class="btn btn-success"> Zapłać </a>
                         }
-                        @if (isAdmin || (!o.IsCompleted && o.IsCompleted))
+                        @if (isAdmin @*|| (o.Status != "Ukończone" && !o.IsPaid)*@)
                         {
                             <a asp-action="Delete" asp-route-id="@o.Id" method="post"
                                class="btn btn-danger"

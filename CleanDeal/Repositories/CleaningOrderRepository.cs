@@ -103,6 +103,7 @@ namespace CleanDeal.Repositories
             var o = await _context.CleaningOrders.FindAsync(id);
             if (o is null || o.CleanerId != cleanerId) return;
             o.Status = OrderStatus.Finished;
+            o.IsCompleted = true;
             await _context.SaveChangesAsync();
         }
     }
