@@ -2,10 +2,10 @@ using CleanDeal.Data;
 using CleanDeal.Hubs;
 using CleanDeal.Repositories;
 using CleanDeal.Models;
+using CleanDeal.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
-
+using Stripe;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +14,12 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
                      .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json",
                                    optional: true)
                      .AddEnvironmentVariables();
+
+builder.Services.Configure<StripeSettings>(
+    builder.Configuration.GetSection("Stripe"));
+
+StripeConfiguration.ApiKey =
+    builder.Configuration["Stripe:SecretKey"];
 
 builder.Services.AddDbContext<CleanDeal.Data.ApplicationDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
