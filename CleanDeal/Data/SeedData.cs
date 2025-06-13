@@ -65,9 +65,9 @@ namespace CleanDeal.Data
             if (!await context.Products.AnyAsync())
             {
                 await context.Products.AddRangeAsync(
-                    new Models.Product { Name = "Uniwersalny płyn", Price = 10, StockQuantity = 200 },
-                    new Models.Product { Name = "Ściereczka mikrofibra", Price = 4, StockQuantity = 500 },
-                    new Models.Product { Name = "Worki na śmieci 60 l", Price = 12, StockQuantity = 150 }
+                    new Models.Product { Name = "Uniwersalny płyn", Price = 10, StockQuantity = 200, Category = ProductCategory.Cleaner },
+                    new Models.Product { Name = "Ściereczka mikrofibra", Price = 4, StockQuantity = 500, Category = ProductCategory.Cleaner },
+                    new Models.Product { Name = "Worki na śmieci 60 l", Price = 12, StockQuantity = 150, Category = ProductCategory.Cleaner }
                 );
                 await context.SaveChangesAsync();
             }

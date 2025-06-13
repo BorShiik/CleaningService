@@ -22,7 +22,21 @@ namespace CleanDeal.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            var products = await _productRepo.GetAllAsync();
+
+            IEnumerable<Product> products;
+            if (User.IsInRole("Cleaner"))
+            {
+                products = await _productRepo.GetByCategoryAsync(ProductCategory.Cleaner);
+            }
+            else if (User.IsInRole("Client"))
+            {
+                products = await _productRepo.GetByCategoryAsync(ProductCategory.Client);
+            }
+            else
+            {
+                products = await _productRepo.GetAllAsync();
+            }
+
             var dto = _mapper.Map<IEnumerable<ProductDTO>>(products);
             return View(dto);
         }

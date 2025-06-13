@@ -2,6 +2,11 @@
 
 namespace CleanDeal.Models
 {
+    public enum ProductCategory
+    {
+        Cleaner,
+        Client
+    }
     public class Product
     {
         public int Id { get; set; }
@@ -11,5 +16,6 @@ namespace CleanDeal.Models
         public decimal Price { get; set; }
         [Range(0, 50)]
         public int StockQuantity { get; set; }
+        public ProductCategory Category { get; set; }
     }
 }

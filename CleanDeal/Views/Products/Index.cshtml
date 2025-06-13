@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Produkty";
     bool isAdmin = User.IsInRole("Admin");
+    bool isCleaner = User.IsInRole("Cleaner");
 }
 <h2>@ViewData["Title"]</h2>
 @if (isAdmin)
@@ -20,6 +21,10 @@
             {
                 <th></th>
             }
+            @if (isCleaner)
+            {
+                <th></th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -34,6 +39,15 @@
                     <td>
                         <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-primary">Edytuj</a>
                         <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-danger">Usuń</a>
+                    </td>
+                }
+                @if (isCleaner)
+                {
+                    <td>
+                        <form asp-controller="Cart" asp-action="Add" method="post">
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button type="submit" class="btn btn-sm btn-primary">Do koszyka</button>
+                        </form>
                     </td>
                 }
             </tr>

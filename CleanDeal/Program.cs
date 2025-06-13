@@ -38,7 +38,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-
+builder.Services.AddSession();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
 
@@ -77,6 +77,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

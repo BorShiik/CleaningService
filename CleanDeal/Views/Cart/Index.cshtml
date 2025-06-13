@@ -1,0 +1,38 @@
+﻿@model IEnumerable<(CleanDeal.Models.Product Product, int Quantity)>
+@{
+    ViewData["Title"] = "Koszyk";
+    var total = Model.Sum(i => i.Product.Price * i.Quantity);
+}
+<h2>@ViewData["Title"]</h2>
+@if (!Model.Any())
+{
+    <p>Twój koszyk jest pusty.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Cena</th>
+                <th>Ilość</th>
+                <th>Suma</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Product.Name</td>
+                    <td>@item.Product.Price</td>
+                    <td>@item.Quantity</td>
+                    <td>@(item.Product.Price * item.Quantity)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><strong>Łącznie: @total</strong></p>
+    <form asp-action="Clear" method="post">
+        <button type="submit" class="btn btn-danger">Wyczyść</button>
+    </form>
+}

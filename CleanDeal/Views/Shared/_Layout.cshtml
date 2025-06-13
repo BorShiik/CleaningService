@@ -20,7 +20,7 @@
         crossorigin="anonymous" />*@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/Review.css" rel="stylesheet" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Review.css" asp-append-version="true" />
 </head>
 <body>
     <header>
@@ -65,6 +65,7 @@
                             <li class="nav-item"><a class="nav-link" asp-controller="CleanerOrders" asp-action="Available">Wolne zlecenia</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="CleanerOrders" asp-action="My">Moje zlecenia</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Chat" asp-action="Order" asp-route-id="0">Czat</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">Koszyk</a></li>
                         }
 
                         @if (isAdmin)
