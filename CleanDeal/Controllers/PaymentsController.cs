@@ -2,7 +2,6 @@
 using CleanDeal.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Stripe;
 using Stripe.Checkout;
 using System.Security.Claims;
 
@@ -19,8 +18,6 @@ namespace CleanDeal.Controllers
             _cfg = cfg;
             _orderRepo = orderRepo;
             _paymentRepo = paymentRepo;
-
-            StripeConfiguration.ApiKey = _cfg["Stripe:SecretKey"];
         }
 
         public async Task<IActionResult> Checkout(int id)
@@ -51,20 +48,20 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(orderId);
             if (order == null) return NotFound();
 
-            var amount = CalculateAmount(order);
+            long amount = CalculateAmount(order);
 
             var options = new SessionCreateOptions
             {
-                PaymentMethodTypes = new List<string> { "card" },
+                PaymentMethodTypes = new List<string> { "card", "blik", "p24" },
                 LineItems = new List<SessionLineItemOptions>
                 {
                     new SessionLineItemOptions
                     {
                         PriceData = new SessionLineItemPriceDataOptions
                         {
-                            UnitAmount   = amount,
-                            Currency     = "pln",
-                            ProductData  = new SessionLineItemPriceDataProductDataOptions
+                            UnitAmount  = amount,
+                            Currency    = "pln",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
                             {
                                 Name = $"Usługa sprzątania #{order.Id}"
                             }
@@ -74,9 +71,13 @@ namespace CleanDeal.Controllers
                 },
                 Mode = "payment",
                 SuccessUrl = Url.Action("Success", "Payments",
-                           new { orderId }, Request.Scheme) + "?session_id={CHECKOUT_SESSION_ID}",
+                    new { orderId }, Request.Scheme) + "&session_id ={ CHECKOUT_SESSION_ID }",
                 CancelUrl = Url.Action("Cancel", "Payments",
-                           new { orderId }, Request.Scheme)
+                    new { orderId }, Request.Scheme),
+                Metadata = new Dictionary<string, string> 
+                {
+                    { "orderId", orderId.ToString() }
+                }
             };
 
             var session = await new SessionService().CreateAsync(options);

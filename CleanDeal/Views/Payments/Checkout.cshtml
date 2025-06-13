@@ -1,12 +1,14 @@
 ﻿@model CleanDeal.Models.CleaningOrder
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
 @{
-    ViewData["Title"] = "Płatność";
+	ViewData["Title"] = "Płatność";
+	var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
 }
 <h2>Podsumowanie płatności</h2>
 
 <p>
-    Usługa: <strong>@Model.ServiceType.Name</strong><br />
-    Kwota do zapłaty: <strong>@ViewBag.AmountDisplay.ToString("c")</strong>
+	Usługa: <strong>@Model.ServiceType.Name</strong><br />
+	Kwota do zapłaty: <strong>@ViewBag.AmountDisplay.ToString("c")</strong>
 </p>
 
 <button id="payBtn" class="btn btn-success">Zapłać teraz</button>
@@ -14,13 +16,24 @@
 
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-    const stripe = Stripe("@ViewBag.PublishableKey");
+const stripe  = Stripe("@ViewBag.PublishableKey");
+const payBtn  = document.getElementById("payBtn");
+const errorEl = document.getElementById("error");
 
-    document.getElementById("payBtn").addEventListener("click", () => {
-        fetch("/Payments/CreateCheckoutSession?orderId=@Model.Id",
-              { method: "POST" })
-            .then(r => r.json())
-            .then(data => stripe.redirectToCheckout({ sessionId: data.id }))
-            .catch(e => document.getElementById("error").textContent = e);
-    });
+payBtn.addEventListener("click", async () => {
+    payBtn.disabled = true;
+    try {
+        const resp = await fetch(`/Payments/CreateCheckoutSession?orderId=@Model.Id`, {
+            method: "POST",
+            headers: { "RequestVerificationToken": "@csrf" }
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        const { id } = await resp.json();
+        await stripe.redirectToCheckout({ sessionId: id });
+
+    } catch (e) {
+        errorEl.textContent = e.message ?? e;
+        payBtn.disabled = false;
+    }
+});
 </script>
