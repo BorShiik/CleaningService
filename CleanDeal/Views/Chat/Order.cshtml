@@ -1,30 +1,29 @@
 ﻿@model CleanDeal.ViewModel.ChatPageViewModel
 @{
     ViewData["Title"] = "Czat – Twoje zamówienia";
-    var orderId = ViewBag.CurrentOrderId as string;
-    var currentUserId = ViewBag.CurrentUserId as string;
-    bool isAdmin = User.IsInRole("Admin");
 }
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
         const orderId = @Model.SelectedOrderId;
+        if (orderId === 0) return;
+
         const currentUserId = '@ViewBag.CurrentUserId';
+        const sendBtn       = document.getElementById("sendBtn");
+        const messageInput  = document.getElementById("messageInput");
+        const messagesList  = document.getElementById("messagesList");
+        const receiverId    = '@Model.ReceiverId';
 
-        const sendBtn = document.getElementById("sendBtn");
-        const messageInput = document.getElementById("messageInput");
-        const messagesList = document.getElementById("messagesList");
-        const receiverId = '@Model.ReceiverId';
-
-        function renderMessage(msg, currentUserId) {
-            const div = document.createElement("div");
-            div.className = (msg.senderId === currentUserId) ? "mb-1 text-end" : "mb-1 text-start";
-            const sender = msg.senderName || msg.senderId || "???";
-            let time = "";
+        function renderMessage(msg) {
+            const div  = document.createElement("div");
+            const self = msg.senderId === currentUserId;
+            div.className = `mb-1 ${self ? "text-end" : "text-start"}`;
+            const sender  = msg.senderName || msg.senderId;
+            let   time    = "";
             if (msg.sentAt) {
                 const d = new Date(msg.sentAt);
-                time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
             }
             div.innerHTML = `
                 <span class="badge bg-secondary">${sender}</span>
@@ -34,37 +33,29 @@
             return div;
         }
 
-        if (sendBtn && messageInput && messagesList && orderId) {
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/chatHub")
-                .build();
+        if (sendBtn && messageInput && messagesList) {
+            const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
-            connection.on("ReceiveMessage", (msg) => {
-                const messageElement = renderMessage(msg, currentUserId);
-                messagesList.appendChild(messageElement);
+            connection.on("ReceiveMessage", msg => {
+                messagesList.appendChild(renderMessage(msg));
                 messagesList.scrollTop = messagesList.scrollHeight;
             });
 
-            connection.start().then(function () {
+            connection.start().then(() => {
                 connection.invoke("JoinOrderGroup", orderId);
                 sendBtn.disabled = false;
-            }).catch(function (err) {
-                return console.error(err.toString());
             });
 
-            sendBtn.addEventListener("click", function (event) {
-                event.preventDefault();
+            sendBtn.addEventListener("click", e => {
+                e.preventDefault();
                 const text = messageInput.value;
                 if (!text) return;
-                connection.invoke("SendOrderMessage", orderId, text, receiverId || "")
-                    .catch(function (err) {
-                        return console.error(err.toString());
-                    });
+                connection.invoke("SendOrderMessage", orderId, text, receiverId || "");
                 messageInput.value = "";
                 messageInput.focus();
             });
 
-            messageInput.addEventListener("keydown", function (e) {
+            messageInput.addEventListener("keydown", e => {
                 if (e.key === "Enter") sendBtn.click();
             });
         }
@@ -72,7 +63,8 @@
 }
 
 <div class="row">
-    <div class="col-md-4 border-end" style="height: 80vh; overflow-y: auto;">
+    <div class="@(Model.SelectedOrderId == 0 ? "col-12 col-md-6 col-lg-5 mx-auto" : "col-12 col-md-4 border-end")"
+         style="height:80vh; overflow-y:auto;">
         <ul class="list-group">
             @foreach (var order in Model.Orders)
             {
@@ -86,34 +78,26 @@
             }
         </ul>
     </div>
-    <div class="col-md-8" style="height: 80vh; display: flex; flex-direction: column;">
-        <div id="messagesList" class="flex-grow-1 overflow-auto mb-2">
-            @if (Model.Messages != null)
-            {
-                foreach (var m in Model.Messages)
+
+    @if (Model.SelectedOrderId != 0)
+    {
+        <div class="col-md-8 d-flex flex-column" style="height:80vh;">
+            <div id="messagesList" class="flex-grow-1 overflow-auto mb-2">
+                @foreach (var m in Model.Messages)
                 {
                     <div class="mb-1 @(m.SenderId == ViewBag.CurrentUserId ? "text-end" : "text-start")">
-                        @if (m.SenderName == "Admin" || m.SenderName == "Administrator")
-                        {
-                            <span class="badge bg-danger">@m.SenderName</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">@m.SenderName</span>
-                        }
+                        <span class="badge @(m.SenderName == "Admin" || m.SenderName == "Administrator" ? "bg-danger" : "bg-secondary")">
+                            @m.SenderName
+                        </span>
                         <span class="p-2 bg-light rounded">@m.Content</span>
                         <span class="text-muted small">@m.SentAt.ToLocalTime().ToString("HH:mm")</span>
                     </div>
                 }
-            }
-            else
-            {
-                <span class="text-muted">Wybierz zamówienie...</span>
-            }
+            </div>
+            <div class="input-group">
+                <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…">
+                <button id="sendBtn" class="btn btn-primary" disabled>Wyślij</button>
+            </div>
         </div>
-        <div class="input-group">
-            <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
-            <button id="sendBtn" class="btn btn-primary">Wyślij</button>
-        </div>
-    </div>
+    }
 </div>

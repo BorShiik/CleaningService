@@ -64,7 +64,7 @@
                                 @(isAdmin ? "Zlecenia" : "Moje zlecenia")
                             </a>
                         </li>
-                        <li><a asp-controller="Chat" asp-action="Order" asp-route-id="0">Czat</a></li>
+                        <li><a asp-controller="Chat" asp-action="Order">Czat</a></li>
                     }
                     @if (isCleaner)
                     {
@@ -75,7 +75,7 @@
                                 <li><a asp-controller="CleanerOrders" asp-action="My">Moje zlecenia</a></li>
                             </ul>
                         </li>
-                        <li><a asp-controller="Chat" asp-action="Order" asp-route-id="0">Czat</a></li>
+                        <li><a asp-controller="Chat" asp-action="Order">Czat</a></li>
                     }
                     @if (!isAdmin)
                     {
