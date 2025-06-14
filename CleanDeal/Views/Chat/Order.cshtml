@@ -15,21 +15,51 @@
         const receiverId = '@Model.ReceiverId';
 
         function renderMessage(msg, currentUserId) {
-            const div = document.createElement("div");
-            div.className = (msg.senderId === currentUserId) ? "mb-1 text-end" : "mb-1 text-start";
-            const sender = msg.senderName || msg.senderId || "???";
-            let time = "";
+            const wrap  = document.createElement('div');
+            const mine  = msg.senderId === currentUserId;
+
+            wrap.className = `d-flex flex-column mb-2 ${mine ? 'align-items-end' : 'align-items-start'}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `px-3 py-2 rounded ${mine ? 'bg-primary text-white' : 'bg-light'}`;
+            bubble.textContent = msg.content;
+
+            const meta  = document.createElement('small');
+            meta.className = 'mt-1 d-flex gap-1';
+
+            const nameSpan = document.createElement('span');
+            const fullName =
+                msg.senderFullName    ??   
+                msg.senderName        ??  
+                msg.username          ??  
+                msg.email             ??  
+                msg.senderId;          
+            const isAdmin = msg.isAdmin || msg.senderRole === 'Admin';
+            nameSpan.textContent = fullName;
+            nameSpan.className   = isAdmin ? 'text-danger' : 'text-muted';
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'text-muted';
             if (msg.sentAt) {
-                const d = new Date(msg.sentAt);
-                time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                timeSpan.textContent = new Date(msg.sentAt).toLocaleString('ru-RU', {
+                    day   : '2-digit',
+                    month : '2-digit',
+                    year  : 'numeric',
+                    hour  : '2-digit',
+                    minute: '2-digit'
+                });
             }
-            div.innerHTML = `
-                <span class="badge bg-secondary">${sender}</span>
-                <span class="p-2 bg-light rounded">${msg.content}</span>
-                <span class="text-muted small">${time}</span>
-            `;
-            return div;
+
+            meta.appendChild(nameSpan);     
+            meta.appendChild(document.createTextNode(' • '));
+            meta.appendChild(timeSpan);      
+            wrap.appendChild(bubble);
+            wrap.appendChild(meta);
+
+            return wrap;
         }
+
+
 
         if (sendBtn && messageInput && messagesList && orderId) {
             const connection = new signalR.HubConnectionBuilder()
@@ -88,19 +118,17 @@
         <div class="col-12 col-md-8 d-flex flex-column my-3">
             <div class="card chat-card flex-grow-1">
                 <div id="messagesList" class="chat-messages">
-@foreach (var m in Model.Messages)
-{
-    var cls = m.SenderName == "Admin" ? "admin"
-            : m.SenderId  == ViewBag.CurrentUserId ? "me" : "you";
+				@foreach (var m in Model.Messages)
+				{
+				    var cls = m.SenderName == "Admin" ? "admin"
+				            : m.SenderId  == ViewBag.CurrentUserId ? "me" : "you";
 
-    <div class="d-flex flex-column @(cls=="me"?"align-items-end":"align-items-start") mb-2">
-        <div class="chat-bubble @cls">@m.Content</div>
-        <div class="chat-meta">@m.SentAt.ToLocalTime():HH\\:mm</div>
-    </div>
-}
-</div>
-
-
+				    <div class="d-flex flex-column @(cls=="me"?"align-items-end":"align-items-start") mb-2">
+				        <div class="chat-bubble @cls">@m.Content</div>
+				        <div class="chat-meta">@m.SentAt.ToLocalTime()</div>
+				    </div>
+				}
+				</div>
                 <div class="input-group">
 	                <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
 	                <button id="sendBtn" class="btn btn-primary">Wyślij</button>
