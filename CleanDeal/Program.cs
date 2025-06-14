@@ -6,6 +6,8 @@ using CleanDeal.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,6 +91,17 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+var pl = new CultureInfo("pl-PL");
+
+var options = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(pl),
+    SupportedCultures = new[] { pl },
+    SupportedUICultures = new[] { pl }
+};
+
+app.UseRequestLocalization(options);
 
 app.UseRouting();
 app.UseSession();

@@ -2,6 +2,10 @@
     ViewData["Title"] = "Opinia";
     int orderId = ViewBag.OrderId;
 }
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Review.css" />
+}
 <h2>Wystaw opinię dla zlecenia #@orderId</h2>
 
 <form asp-action="Create" asp-route-orderId="@orderId" method="post">

@@ -1,4 +1,5 @@
-﻿using CleanDeal.Models;
+﻿using CleanDeal.DTOs;
+using CleanDeal.Models;
 
 namespace CleanDeal.Repositories
 {
@@ -7,6 +8,8 @@ namespace CleanDeal.Repositories
         Task<Review?> GetByIdAsync(int id);
         Task<Review?> GetByOrderIdAsync(int orderId);
         Task<IEnumerable<Review>> GetAllAsync();
+        Task<double> GetAverageRatingAsync();
+        Task<IEnumerable<CleanerRatingDTO>> GetAverageRatingByCleanerAsync();
         Task AddAsync(Review review);
         Task UpdateAsync(Review review);
         Task DeleteAsync(int id);
