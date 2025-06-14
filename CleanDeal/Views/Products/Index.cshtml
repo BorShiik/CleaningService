@@ -41,13 +41,13 @@
                         <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-danger">Usuń</a>
                     </td>
                 }
-                @if (isCleaner)
+                @if (!isAdmin)
                 {
                     <td>
                         <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex">
                             <input type="hidden" name="id" value="@p.Id" />
                             <input type="number" name="qty" value="1" min="1" class="form-control form-control-sm me-1" style="width:80px;" />
-                            <button type="submit" class="btn btn-sm btn-success ms-5">Do koszyka</button>
+                            <button type="submit" class="btn btn-sm btn-success ms-5">Dodaj do koszyka</button>
                         </form>
                     </td>
                 }
