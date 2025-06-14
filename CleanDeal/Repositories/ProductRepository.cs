@@ -42,6 +42,11 @@ namespace CleanDeal.Repositories
             return await _context.Products.FindAsync(id);
         }
 
+        public async Task<int> CountAsync()
+        {
+            return await _context.Products.CountAsync();
+        }
+
         public async Task UpdateAsync(Product product)
         {
             _context.Products.Update(product);

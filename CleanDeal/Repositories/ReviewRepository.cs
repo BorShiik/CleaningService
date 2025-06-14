@@ -55,5 +55,27 @@ namespace CleanDeal.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<double> GetAverageRatingAsync()
+        {
+            if (!await _context.Reviews.AnyAsync()) return 0;
+            return await _context.Reviews.AverageAsync(r => r.Rating);
+        }
+
+        public async Task<IEnumerable<CleanDeal.DTOs.CleanerRatingDTO>> GetAverageRatingByCleanerAsync()
+        {
+            return await _context.Reviews
+                .Include(r => r.CleaningOrder)
+                .ThenInclude(o => o.Cleaner)
+                .Where(r => r.CleaningOrder.CleanerId != null)
+                .GroupBy(r => new { r.CleaningOrder.CleanerId, r.CleaningOrder.Cleaner!.FullName })
+                .Select(g => new CleanDeal.DTOs.CleanerRatingDTO
+                {
+                    CleanerId = g.Key.CleanerId!,
+                    CleanerName = g.Key.FullName,
+                    AverageRating = g.Average(r => r.Rating)
+                })
+                .ToListAsync();
+        }
     }
 }

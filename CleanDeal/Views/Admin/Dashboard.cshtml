@@ -1,0 +1,152 @@
+﻿@model CleanDeal.ViewModel.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Panel administratora";
+    Layout = "_Layout";
+}
+
+
+<section class="section dark-background py-5">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">Panel administratora</h1>
+        <p class="opacity-75">Podsumowanie kluczowych statystyk platformy CleanDeal</p>
+    </div>
+</section>
+
+
+<section id="stats" class="section">
+    <div class="container">
+        <div class="row gy-4" data-aos="fade-up">
+
+            <!-- Zamówienia -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-receipt"></i></div>
+                        <h5 class="card-title mb-1">Zamówienia</h5>
+                        <p class="display-6 fw-semibold mb-0">@Model.TotalOrders</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Użytkownicy -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-people"></i></div>
+                        <h5 class="card-title mb-1">Użytkownicy</h5>
+                        <p class="display-6 fw-semibold mb-0">@Model.TotalUsers</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Produkty -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-box-seam"></i></div>
+                        <h5 class="card-title mb-1">Produkty</h5>
+                        <p class="display-6 fw-semibold mb-0">@Model.TotalProducts</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Przychód -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-cash-coin"></i></div>
+                        <h5 class="card-title mb-1">Przychód</h5>
+                        <p class="display-6 fw-semibold mb-0">
+                            @Model.TotalRevenue.ToString("c")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<section id="ratings" class="section bg-light">
+    <div class="container" data-aos="fade-up">
+        <h3 class="mb-3">Średnia ocena zamówień</h3>
+        <p class="fs-4 fw-bold text-primary">
+            @Model.AverageOrderRating.ToString("0.0") / 5
+        </p>
+
+        @if (Model.CleanerRatings.Any())
+        {
+            <h4 class="mt-4">Oceny pracowników</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Pracownik</th>
+                            <th class="text-center">Średnia ocena</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.CleanerRatings)
+                        {
+                            <tr>
+                                <td>@c.CleanerName</td>
+                                <td class="text-center">@c.AverageRating.ToString("0.0") / 5</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+
+
+<section id="recent-orders" class="section">
+    <div class="container" data-aos="fade-up">
+        <h3 class="mb-3">Najnowsze zlecenia</h3>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Użytkownik</th>
+                        <th>Usługa</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in Model.RecentOrders)
+                    {
+                        <tr>
+                            <td>@o.Id</td>
+                            <td>@o.Date:g</td>
+                            <td>@o.UserEmail</td>
+                            <td>@o.ServiceTypeName</td>
+                            <td>
+                                <span class="badge bg-@(o.Status=="Zakończone"?"success":"secondary")">
+                                    @o.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        #stats .card {
+            border: none;
+            border-radius: 1rem;
+        }
+
+        #stats .icon i {
+            line-height: 1;
+        }
+    </style>
+}
