@@ -42,8 +42,8 @@ namespace CleanDeal.Mapping
             CreateMap<ProductDTO, Product>();
 
             CreateMap<ChatMessage, ChatMessageDTO>()
-                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.UserName))
-                .ForMember(dest => dest.ReceiverName, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver.UserName : null));
+                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.FullName))
+                .ForMember(dest => dest.ReceiverName, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver.FullName : null));
 
             CreateMap<Review, ReviewDTO>();
 

@@ -3,42 +3,96 @@
 @{
     ViewData["Title"] = "Rejestracja";
 }
-<h1>@ViewData["Title"]</h1>
 
-<form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<section class="vh-100 bg-image"
+         style="background-image:url('/img/welcome-bg.png');">
+    <div class="mask d-flex align-items-center h-100" style="background:rgba(0,0,0,.4);">
+        <div class="container h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+                    <div class="card shadow" style="border-radius:15px;">
+                        <div class="card-body p-5">
 
-    <!-- Email ------------------------------>
-    <div class="mb-3">
-        <label asp-for="Input.Email" class="form-label"></label>
-        <input asp-for="Input.Email" class="form-control" />
-        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            <h2 class="text-uppercase text-center mb-5">Stwórz konto</h2>
+
+                            <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+
+	                            <div asp-validation-summary="ModelOnly"
+	                                 class="alert alert-danger" role="alert"></div>
+
+	                            <!-- pełne imię i nazwisko -->
+	                            <div class="form-outline mb-4">
+		                            <input asp-for="Input.FullName" class="form-control form-control-lg" />
+		                            <label asp-for="Input.FullName" class="form-label"></label>
+		                            <span asp-validation-for="Input.FullName" class="text-danger"></span>
+	                            </div>
+
+                                <!-- e-mail -->
+                                <div class="form-outline mb-4">
+                                    <input asp-for="Input.Email"
+                                           class="form-control form-control-lg" />
+                                    <label asp-for="Input.Email" class="form-label"></label>
+                                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                </div>
+
+                                <!-- hasło -->
+                                <div class="form-outline mb-4">
+                                    <input asp-for="Input.Password"
+                                           class="form-control form-control-lg" />
+                                    <label asp-for="Input.Password" class="form-label"></label>
+                                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                </div>
+
+                                <!-- powtórz hasło -->
+                                <div class="form-outline mb-4">
+                                    <input asp-for="Input.ConfirmPassword"
+                                           class="form-control form-control-lg" />
+                                    <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                                </div>
+
+                                <!-- rola -->
+                                <div class="form-outline mb-4">
+                                    <select asp-for="Input.SelectedRole" class="form-select form-select-lg">
+                                        <option value="Client">Klient</option>
+                                        <option value="Cleaner">Cleaner</option>
+                                    </select>
+                                    <label asp-for="Input.SelectedRole" class="form-label"></label>
+                                    <span asp-validation-for="Input.SelectedRole" class="text-danger"></span>
+                                </div>
+
+                                @* <!-- akceptacja regulaminu -->
+                                <div class="form-check d-flex justify-content-center mb-5">
+                                    <input asp-for="Input.AcceptTerms"
+                                           class="form-check-input me-2" />
+                                    <label asp-for="Input.AcceptTerms" class="form-check-label">
+                                        Akceptuję <a asp-page="/Terms" class="text-body"><u>regulamin</u></a>
+                                    </label>
+                                    <span asp-validation-for="Input.AcceptTerms"
+                                          class="text-danger ms-2"></span>
+                                </div> *@
+
+                                <!-- przycisk -->
+                                <div class="d-flex justify-content-center">
+                                    <button type="submit"
+                                            class="btn btn-success btn-lg gradient-custom-4 text-body">
+                                        Zarejestruj
+                                    </button>
+                                </div>
+
+                                <p class="text-center text-muted mt-5 mb-0">
+                                    Masz już konto?
+                                    <a asp-page="/Account/Login" class="fw-bold text-body"><u>Zaloguj się</u></a>
+                                </p>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- Hasło ----------------------------->
-    <div class="mb-3">
-        <label asp-for="Input.Password" class="form-label"></label>
-        <input asp-for="Input.Password" class="form-control" />
-        <span asp-validation-for="Input.Password" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Input.ConfirmPassword" class="form-label"></label>
-        <input asp-for="Input.ConfirmPassword" class="form-control" />
-        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-    </div>
-
-    <!-- ROLE – NOWE POLE ------------------>
-    <div class="mb-3">
-        <label asp-for="Input.SelectedRole" class="form-label">Rejestruję się jako:</label>
-        <select asp-for="Input.SelectedRole" class="form-select">
-            <option value="Client">Klient</option>
-            <option value="Cleaner">Cleaner</option>
-        </select>
-        <span asp-validation-for="Input.SelectedRole" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Zarejestruj</button>
-</form>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

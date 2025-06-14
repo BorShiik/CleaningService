@@ -5,7 +5,7 @@ namespace CleanDeal.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        [Required, StringLength(150)]
+        [Required, MaxLength(150)]
         public string FullName { get; set; } = string.Empty;
 
         public ICollection<CleaningOrder>? CleaningOrders { get; set; }

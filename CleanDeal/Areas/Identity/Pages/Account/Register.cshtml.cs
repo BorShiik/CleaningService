@@ -17,7 +17,7 @@ public class RegisterModel : PageModel
     public RegisterModel(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        RoleManager<IdentityRole> roleManager,          // ← внедряем
+        RoleManager<IdentityRole> roleManager,        
         ILogger<RegisterModel> logger,
         IEmailSender emailSender)
     {
@@ -31,16 +31,20 @@ public class RegisterModel : PageModel
     // ---------- Input ------------------------------
     public class InputModel
     {
+        [Required, Display(Name = "Imię i nazwisko")]
+        public string FullName { get; set; } = string.Empty;
+
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
 
         [Required, DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
-        [DataType(DataType.Password), Compare("Password")]
+        [DataType(DataType.Password),
+         Compare(nameof(Password), ErrorMessage = "Hasła nie są takie same")]
         public string ConfirmPassword { get; set; } = string.Empty;
 
-        [Required]                     // ← новое поле
+        [Required]                     
         public string SelectedRole { get; set; } = "Client";
     }
 
@@ -56,12 +60,11 @@ public class RegisterModel : PageModel
         returnUrl ??= Url.Content("~/");
         if (!ModelState.IsValid) return Page();
 
-        // 1. Создаём пользователя
         var user = new ApplicationUser
         {
             UserName = Input.Email,
             Email = Input.Email,
-            FullName = Input.Email      // либо отдельное поле ФИО
+            FullName = Input.FullName      
         };
         var result = await _userManager.CreateAsync(user, Input.Password);
         if (!result.Succeeded)
@@ -70,11 +73,9 @@ public class RegisterModel : PageModel
             return Page();
         }
 
-        // 2. Убедимся, что роль существует
         if (!await _roleManager.RoleExistsAsync(Input.SelectedRole))
             await _roleManager.CreateAsync(new IdentityRole(Input.SelectedRole));
 
-        // 3. Добавляем пользователя в роль
         await _userManager.AddToRoleAsync(user, Input.SelectedRole);
 
         _logger.LogInformation("Nowy użytkownik utworzył konto z rolą {Role}.", Input.SelectedRole);

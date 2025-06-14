@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CleanDeal.Models;
 using CleanDeal.ViewModel;
+using Microsoft.AspNetCore.Identity;
 
 namespace CleanDeal.Controllers
 {
@@ -16,16 +17,18 @@ namespace CleanDeal.Controllers
     {
         private readonly ICleaningOrderRepository _orderRepo;
         private readonly IChatMessageRepository _chatRepo;
+        private readonly UserManager<ApplicationUser> _userMgr;
         private readonly IMapper _mapper;
 
-        public ChatController(ICleaningOrderRepository orderRepo, IChatMessageRepository chatRepo, IMapper mapper)
+        public ChatController(ICleaningOrderRepository orderRepo, IChatMessageRepository chatRepo, UserManager<ApplicationUser> userMgr, IMapper mapper)
         {
             _orderRepo = orderRepo;
             _chatRepo = chatRepo;
+            _userMgr = userMgr;
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Order(int? id)
+        public async Task<IActionResult> Order(int ?id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -36,7 +39,27 @@ namespace CleanDeal.Controllers
                 orders = await _orderRepo.GetByUserIdAsync(userId);
 
             int selectedOrderId = id ?? orders.FirstOrDefault()?.Id ?? 0;
-            var messages = await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);
+            var messages = selectedOrderId == 0
+                ? new List<ChatMessage>()
+                : await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);
+
+            if (selectedOrderId > 0 && !messages.Any())
+            { 
+                var admin = await _userMgr.GetUsersInRoleAsync("Admin");
+                var adminUser = admin.FirstOrDefault();          
+                if (adminUser != null)
+                { 
+                    await _chatRepo.AddAsync(new ChatMessage
+                    {
+                        CleaningOrderId = selectedOrderId,
+                        SenderId = adminUser.Id,
+                        Content = "Hello, your cleaner is on the way!",
+                        SentAt = DateTime.UtcNow
+                    });
+                    await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);  
+                    messages = await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);
+                }
+            }
 
             var vm = new ChatPageViewModel
             {
