@@ -7,6 +7,7 @@ namespace CleanDeal.Repositories
     public class ServiceTypeRepository : IServiceTypeRepository
     {
         private readonly ApplicationDbContext _context;
+
         public ServiceTypeRepository(ApplicationDbContext context)
         {
             _context = context;

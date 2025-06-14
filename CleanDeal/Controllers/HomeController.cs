@@ -1,21 +1,31 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using CleanDeal.Models;
+using CleanDeal.Repositories;
 
 namespace CleanDeal.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly IServiceTypeRepository _serviceRepo;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, IServiceTypeRepository serviceRepo)
     {
         _logger = logger;
+        _serviceRepo = serviceRepo;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        if (User.Identity?.IsAuthenticated == true && User.IsInRole("Cleaner"))
+        {
+            // przekierowanie do stron y sprz¹tacza
+            return RedirectToAction("Index", "CleanerOrders");
+        }
+
+        var services = await _serviceRepo.GetAllAsync();
+        return View(services);
     }
 
     public IActionResult Privacy()

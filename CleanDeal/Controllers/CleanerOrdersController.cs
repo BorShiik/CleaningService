@@ -22,7 +22,10 @@ public class CleanerOrdersController : Controller
         _mapper = mapper;
         _cleanerId = ctx.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
     }
-
+    public IActionResult Index()        
+    {
+        return View("Index");
+    }
     public async Task<IActionResult> Available()
     {
         var list = (await _repo.GetAvailableAsync())
