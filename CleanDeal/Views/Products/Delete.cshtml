@@ -1,16 +1,41 @@
 ﻿@model CleanDeal.DTOs.ProductDTO
 @{
     ViewData["Title"] = "Usuń produkt";
+    Layout = "_Layout";
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-<h2>@ViewData["Title"]</h2>
-<h4>Czy na pewno chcesz usunąć ten produkt?</h4>
-<div>
-    <h5>@Model.Name</h5>
-    <p>Cena: @Model.Price</p>
-    <p>Ilość: @Model.StockQuantity</p>
-</div>
-<form asp-action="Delete" method="post">
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-danger">Usuń</button>
-    <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
-</form>
+
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0"><i class="bi bi-trash me-2"></i>Usuń produkt</h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container col-lg-6" data-aos="fade-up">
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+            <div>
+                Czy na pewno chcesz usunąć ten produkt? Tej operacji nie można cofnąć.
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h4 class="card-title">@Model.Name</h4>
+                <p class="mb-1">Cena: <strong>@Model.Price.ToString("c", pl)</strong></p>
+                <p>Ilość: <strong>@Model.StockQuantity</strong></p>
+            </div>
+        </div>
+
+        <form asp-action="Delete" method="post" class="d-flex gap-2">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>Usuń
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                Anuluj
+            </a>
+        </form>
+    </div>
+</section>

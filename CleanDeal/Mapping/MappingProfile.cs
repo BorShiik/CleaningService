@@ -17,6 +17,8 @@ namespace CleanDeal.Mapping
                            o => o.MapFrom(s => s.TotalPrice != null ? s.TotalPrice : (decimal?)null))
                 .ForMember(d => d.HasReview,
                            o => o.MapFrom(s => s.Review != null))
+                .ForMember(d => d.Cleaner,
+                           o => o.MapFrom(s => s.Cleaner))
                 .ForMember(d => d.ReviewRating,
                            o => o.MapFrom(s => s.Review != null ? (int?)s.Review.Rating : null))
                 .ForMember(d => d.Status,

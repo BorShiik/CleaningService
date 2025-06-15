@@ -47,7 +47,7 @@ namespace CleanDeal.Controllers
             var model = new OrderCreateViewModel
             {
                 Date = System.DateTime.Today.AddDays(1), 
-                ServiceTypeOptions = serviceTypes.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
                 {
                     Value = st.Id.ToString(),
                     Text = st.Name
@@ -63,7 +63,7 @@ namespace CleanDeal.Controllers
             if (!ModelState.IsValid)
             {
                 var serviceTypes = await _serviceTypeRepo.GetAllAsync();
-                model.ServiceTypeOptions = serviceTypes.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                model.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
                 {
                     Value = st.Id.ToString(),
                     Text = st.Name

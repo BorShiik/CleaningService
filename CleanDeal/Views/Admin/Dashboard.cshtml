@@ -115,6 +115,7 @@
                         <th>Użytkownik</th>
                         <th>Usługa</th>
                         <th>Status</th>
+                        <th class="text-center">Akcje</th>   
                     </tr>
                 </thead>
                 <tbody>
@@ -129,6 +130,13 @@
                                 <span class="badge bg-@(o.Status=="Zakończone"?"success":"secondary")">
                                     @o.Status
                                 </span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-controller="Orders" asp-action="Details"
+                                   asp-route-id="@o.Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Detale
+                                </a>
                             </td>
                         </tr>
                     }

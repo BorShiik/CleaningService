@@ -42,7 +42,7 @@ namespace CleanDeal.Controllers
 
             ViewBag.PublishableKey = _cfg["Stripe:PublishableKey"];
             ViewBag.OrderId = id;
-            ViewBag.AmountDisplay = CalculateAmount(order) / 100m;
+            ViewBag.AmountDisplay = GetAmountInZloty(order);
 
             var dto = _mapper.Map<CleaningOrderDTO>(order);
 
@@ -55,7 +55,7 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(orderId);
             if (order == null) return NotFound();
 
-             long amount = CalculateAmount(order);
+            long amount = GetAmountInCents(order);
 
             var options = new SessionCreateOptions
             {
@@ -100,7 +100,7 @@ namespace CleanDeal.Controllers
             {
                 await _paymentRepo.AddAsync(new Payment
                 {
-                    Amount = CalculateAmount(order),
+                    Amount = GetAmountInZloty(order),
                     PaymentDate = DateTime.UtcNow,
                     CleaningOrderId = orderId
                 });
@@ -116,7 +116,11 @@ namespace CleanDeal.Controllers
             return RedirectToAction("Details", "Orders", new { id = orderId });
         }
 
-        private static long CalculateAmount(CleaningOrder order) => (long)Math.Round(order.TotalPrice * 100m ?? 0);
+        private static long GetAmountInCents(CleaningOrder order)
+            => (long)Math.Round((order.TotalPrice ?? 0m) * 100m);   
+
+        private static decimal GetAmountInZloty(CleaningOrder order)
+            => order.TotalPrice ?? 0m;
     }
 }
 
