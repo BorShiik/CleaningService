@@ -32,13 +32,17 @@ namespace CleanDeal.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            IEnumerable<CleaningOrder> orders;
-            if (User.IsInRole("Cleaner"))
-                orders = await _orderRepo.GetByCleanerAsync(userId);
-            else
-                orders = await _orderRepo.GetByUserIdAsync(userId);
+            IEnumerable<CleaningOrder> orders =
+                User.IsInRole("Admin")
+                          ? await _orderRepo.GetAllAsync()              
+                          : User.IsInRole("Cleaner")
+                              ? await _orderRepo.GetByCleanerAsync(userId)
+                              : await _orderRepo.GetByUserIdAsync(userId);
 
-            int selectedOrderId = id ?? orders.FirstOrDefault()?.Id ?? 0;
+            int selectedOrderId =
+                (id.HasValue && orders.Any(o => o.Id == id))     
+                           ? id.Value
+                           : 0;
             var messages = selectedOrderId == 0
                 ? new List<ChatMessage>()
                 : await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);

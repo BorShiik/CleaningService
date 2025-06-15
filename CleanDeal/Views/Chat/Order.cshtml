@@ -1,9 +1,6 @@
 ﻿@model CleanDeal.ViewModel.ChatPageViewModel
 @{
     ViewData["Title"] = "Czat – Twoje zamówienia";
-    var orderId = ViewBag.CurrentOrderId as string;
-    var currentUserId = ViewBag.CurrentUserId as string;
-    bool isAdmin = User.IsInRole("Admin");
 }
 
 @section Scripts {
@@ -18,21 +15,51 @@
         const receiverId = '@Model.ReceiverId';
 
         function renderMessage(msg, currentUserId) {
-            const div = document.createElement("div");
-            div.className = (msg.senderId === currentUserId) ? "mb-1 text-end" : "mb-1 text-start";
-            const sender = msg.senderName || msg.senderId || "???";
-            let time = "";
+            const wrap  = document.createElement('div');
+            const mine  = msg.senderId === currentUserId;
+
+            wrap.className = `d-flex flex-column mb-2 ${mine ? 'align-items-end' : 'align-items-start'}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `px-3 py-2 rounded ${mine ? 'bg-primary text-white' : 'bg-light'}`;
+            bubble.textContent = msg.content;
+
+            const meta  = document.createElement('small');
+            meta.className = 'mt-1 d-flex gap-1';
+
+            const nameSpan = document.createElement('span');
+            const fullName =
+                msg.senderFullName    ??   
+                msg.senderName        ??  
+                msg.username          ??  
+                msg.email             ??  
+                msg.senderId;          
+            const isAdmin = msg.isAdmin || msg.senderRole === 'Admin';
+            nameSpan.textContent = fullName;
+            nameSpan.className   = isAdmin ? 'text-danger' : 'text-muted';
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'text-muted';
             if (msg.sentAt) {
-                const d = new Date(msg.sentAt);
-                time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                timeSpan.textContent = new Date(msg.sentAt).toLocaleString('ru-RU', {
+                    day   : '2-digit',
+                    month : '2-digit',
+                    year  : 'numeric',
+                    hour  : '2-digit',
+                    minute: '2-digit'
+                });
             }
-            div.innerHTML = `
-                <span class="badge bg-secondary">${sender}</span>
-                <span class="p-2 bg-light rounded">${msg.content}</span>
-                <span class="text-muted small">${time}</span>
-            `;
-            return div;
+
+            meta.appendChild(nameSpan);     
+            meta.appendChild(document.createTextNode(' • '));
+            meta.appendChild(timeSpan);      
+            wrap.appendChild(bubble);
+            wrap.appendChild(meta);
+
+            return wrap;
         }
+
+
 
         if (sendBtn && messageInput && messagesList && orderId) {
             const connection = new signalR.HubConnectionBuilder()
@@ -71,49 +98,42 @@
     </script>
 }
 
+
 <div class="row">
-    <div class="col-md-4 border-end" style="height: 80vh; overflow-y: auto;">
-        <ul class="list-group">
-            @foreach (var order in Model.Orders)
+    <div class="@(Model.SelectedOrderId==0 ? "col-12 col-md-6 col-lg-5 mx-auto" : "col-12 col-md-4")">
+        <ul class="list-group my-3">
+            @foreach (var o in Model.Orders)
             {
-                <li class="list-group-item d-flex align-items-center @(order.Id == Model.SelectedOrderId ? "active selected-order" : "")">
-                    <a href="@Url.Action("Order", "Chat", new { id = order.Id })"
-                       class="w-100 text-decoration-none @(order.Id == Model.SelectedOrderId ? "fw-bold text-dark" : "text-primary")">
-                        <span class="fw-bold">Zamówienie #@order.Id</span><br />
-                        <span class="small">@order.ServiceType.Name (@order.Date.ToShortDateString())</span>
-                    </a>
-                </li>
+                <a asp-action="Order" asp-route-id="@o.Id"
+                   class="list-group-item list-group-item-action @(o.Id==Model.SelectedOrderId?"active":"")">
+                    <div class="fw-semibold">Zamówienie #@o.Id</div>
+                    <small>@o.ServiceType.Name (@o.Date.ToShortDateString())</small>
+                </a>
             }
         </ul>
     </div>
-    <div class="col-md-8" style="height: 80vh; display: flex; flex-direction: column;">
-        <div id="messagesList" class="flex-grow-1 overflow-auto mb-2">
-            @if (Model.Messages != null)
-            {
-                foreach (var m in Model.Messages)
-                {
-                    <div class="mb-1 @(m.SenderId == ViewBag.CurrentUserId ? "text-end" : "text-start")">
-                        @if (m.SenderName == "Admin" || m.SenderName == "Administrator")
-                        {
-                            <span class="badge bg-danger">@m.SenderName</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">@m.SenderName</span>
-                        }
-                        <span class="p-2 bg-light rounded">@m.Content</span>
-                        <span class="text-muted small">@m.SentAt.ToLocalTime().ToString("HH:mm")</span>
-                    </div>
-                }
-            }
-            else
-            {
-                <span class="text-muted">Wybierz zamówienie...</span>
-            }
+
+    @if (Model.SelectedOrderId != 0)
+    {
+        <div class="col-12 col-md-8 d-flex flex-column my-3">
+            <div class="card chat-card flex-grow-1">
+                <div id="messagesList" class="chat-messages">
+				@foreach (var m in Model.Messages)
+				{
+				    var cls = m.SenderName == "Admin" ? "admin"
+				            : m.SenderId  == ViewBag.CurrentUserId ? "me" : "you";
+
+				    <div class="d-flex flex-column @(cls=="me"?"align-items-end":"align-items-start") mb-2">
+				        <div class="chat-bubble @cls">@m.Content</div>
+				        <div class="chat-meta">@m.SentAt.ToLocalTime()</div>
+				    </div>
+				}
+				</div>
+                <div class="input-group">
+	                <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
+	                <button id="sendBtn" class="btn btn-primary">Wyślij</button>
+                </div>
+            </div>
         </div>
-        <div class="input-group">
-            <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
-            <button id="sendBtn" class="btn btn-primary">Wyślij</button>
-        </div>
-    </div>
+    }
 </div>
