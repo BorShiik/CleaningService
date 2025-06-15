@@ -70,7 +70,7 @@ namespace CleanDeal.Repositories
                 .ThenInclude(o => o.Cleaner)
                 .Where(r => r.CleaningOrder.CleanerId != null)
                 .GroupBy(r => new { r.CleaningOrder.CleanerId, r.CleaningOrder.Cleaner!.FullName })
-                .Select(g => new CleanDeal.DTOs.CleanerRatingDTO
+                .Select(g => new CleanerRatingDTO
                 {
                     CleanerId = g.Key.CleanerId!,
                     CleanerName = g.Key.FullName,

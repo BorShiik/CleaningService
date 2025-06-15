@@ -1,21 +1,50 @@
 ﻿@model CleanDeal.DTOs.CleaningOrderDTO
 @{
     ViewData["Title"] = "Usuń zlecenie";
+    Layout = "_Layout";
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-<h2>Czy na pewno usunąć zlecenie #@Model.Id?</h2>
 
-<dl class="row">
-    <dt class="col-sm-3">Data</dt>
-    <dd class="col-sm-9">@Model.Date.ToString("g")</dd>
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-trash me-2"></i>@ViewData["Title"]
+        </h1>
+    </div>
+</section>
 
-    <dt class="col-sm-3">Adres</dt>
-    <dd class="col-sm-9">@Model.Address</dd>
+<section class="section">
+    <div class="container col-lg-6" data-aos="fade-up">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
 
-    <dt class="col-sm-3">Usługa</dt>
-    <dd class="col-sm-9">@Model.ServiceTypeName</dd>
-</dl>
+                <h4 class="text-center mb-4">
+                    Czy na pewno usunąć zlecenie #@Model.Id?
+                </h4>
 
-<form asp-action="Delete" asp-route-id="@Model.Id" method="post">
-    <button type="submit" class="btn btn-danger">Usuń</button>
-    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Anuluj</a>
-</form>
+                <dl class="row mb-4">
+                    <dt class="col-sm-4">Data</dt>
+                    <dd class="col-sm-8">@Model.Date.ToString("g", pl)</dd>
+
+                    <dt class="col-sm-4">Adres</dt>
+                    <dd class="col-sm-8">@Model.Address</dd>
+
+                    <dt class="col-sm-4">Usługa</dt>
+                    <dd class="col-sm-8">@Model.ServiceTypeName</dd>
+                </dl>
+
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+                      class="d-flex gap-2 justify-content-center">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Usuń
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.Id"
+                       class="btn btn-outline-secondary">
+                        Anuluj
+                    </a>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>

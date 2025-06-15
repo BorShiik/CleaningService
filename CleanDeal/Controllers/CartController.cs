@@ -175,7 +175,7 @@ namespace CleanDeal.Controllers
                 Mode = "payment",
                 SuccessUrl = Url.Action(nameof(Success), "Cart",
                              new { orderId = order.Id }, Request.Scheme)
-                             + "?session_id={CHECKOUT_SESSION_ID}",
+                             + "&session_id={CHECKOUT_SESSION_ID}",
                 CancelUrl = Url.Action(nameof(Cancel), "Cart",
                              new { orderId = order.Id }, Request.Scheme),
 

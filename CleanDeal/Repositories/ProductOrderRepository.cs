@@ -26,6 +26,15 @@ namespace CleanDeal.Repositories
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
+        public async Task<IEnumerable<ProductOrder>> GetAllAsync()
+        {
+            return await _context.ProductOrders
+                .Include(o => o.Items).ThenInclude(i => i.Product)
+                .Include(o => o.Payment)
+                .ToListAsync();
+        }
+
+
         public async Task<IEnumerable<ProductOrder>> GetByUserIdAsync(string userId)
         {
             return await _context.ProductOrders

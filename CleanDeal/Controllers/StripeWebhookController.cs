@@ -49,9 +49,9 @@ namespace CleanDeal.Controllers
                 var session = (Session)stripeEvent.Data.Object;
                 var orderId = int.Parse(session.Metadata["orderId"]);
                 var orderType = session.Metadata.TryGetValue("orderType", out var t)
-                                ? t : "cleaning";   // «cleaning» по-умолчанию
+                                ? t : "cleaning";   
 
-                // Платёж уже есть?
+                
                 if (await _payRepo.GetByOrderIdAsync(orderId) != null)
                     return Ok();
 
@@ -63,7 +63,7 @@ namespace CleanDeal.Controllers
                     ProductOrderId = orderType == "product" ? orderId : null
                 };
 
-                // валидация FK – убедимся, что заказ существует
+                
                 if (orderType == "cleaning" && await _cleanRepo.GetByIdAsync(orderId) == null)
                     return BadRequest("Cleaning order not found");
                 if (orderType == "product" && await _prodRepo.GetByIdAsync(orderId) == null)

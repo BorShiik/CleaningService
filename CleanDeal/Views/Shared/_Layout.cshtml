@@ -57,7 +57,7 @@
                     <li><a asp-controller="Services" asp-action="Index">Usługi</a></li>
                     <li><a asp-controller="Products" asp-action="Index">Produkty</a></li>
 
-                   
+
                     @if (isAuth && !isCleaner)
                     {
                         <li>
@@ -80,6 +80,7 @@
                     }
                     @if (!isAdmin)
                     {
+                        <li><a asp-controller="ProductOrders" asp-action="Index">Moje zakupy</a></li>
                         <li><a asp-controller="Cart" asp-action="Index">Koszyk</a></li>
                     }
                     @if (isAdmin)
@@ -88,7 +89,7 @@
                         <li><a asp-controller="Admin" asp-action="Dashboard">Dashboard</a></li>
                     }
 
-                    
+
                     @if (isAuth)
                     {
                         <li class="dropdown">
