@@ -107,7 +107,8 @@ namespace CleanDeal.Data
                 {
                     CleaningOrderId = order.Id,
                     Amount = 200,
-                    PaymentDate = DateTime.UtcNow
+                    PaymentDate = DateTime.UtcNow,
+                    ProductOrderId = null
                 };
                 context.Payments.Add(payment);
 

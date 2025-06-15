@@ -67,6 +67,7 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ICleaningOrderRepository, CleaningOrderRepository>();
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 builder.Services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
+builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
 
 var app = builder.Build();
 

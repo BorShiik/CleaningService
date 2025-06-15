@@ -11,11 +11,13 @@ namespace CleanDeal.Controllers
     public class ProductsController: Controller
     {
         private readonly IProductRepository _productRepo;
+        private readonly IPaymentRepository _paymentRepo;
         private readonly IMapper _mapper;
 
-        public ProductsController(IProductRepository productRepo, IMapper mapper)
+        public ProductsController(IProductRepository productRepo, IPaymentRepository paymentRepo, IMapper mapper)
         {
             _productRepo = productRepo;
+            _paymentRepo = paymentRepo;
             _mapper = mapper;
         }
 

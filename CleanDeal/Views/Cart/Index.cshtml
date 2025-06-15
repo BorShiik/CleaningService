@@ -38,31 +38,5 @@ else
         </tbody>
     </table>
     <p><strong>Razem:</strong> @ViewBag.Total.ToString("c")</p>
-    <button id="payBtn" class="btn btn-success">Zapłać</button>
-    <span id="error" class="text-danger ms-2"></span>
-}
-@section Scripts {
-    <script src="https://js.stripe.com/v3/"></script>
-    <script>
-const payBtn = document.getElementById("payBtn");
-const errorEl = document.getElementById("error");
-if (payBtn) {
-    payBtn.addEventListener("click", async () => {
-        payBtn.disabled = true;
-        try {
-            const resp = await fetch("@Url.Action("Checkout","Cart")", {
-                method: "POST",
-                headers: { "RequestVerificationToken": "@csrf" }
-            });
-            if (!resp.ok) throw new Error(await resp.text());
-            const { id, key } = await resp.json();
-            const stripe = Stripe(key);
-            await stripe.redirectToCheckout({ sessionId: id });
-        } catch (e) {
-            errorEl.textContent = e.message ?? e;
-            payBtn.disabled = false;
-        }
-    });
-}
-    </script>
+    <a asp-action="Checkout" class="btn btn-success">Przejdź do płatności</a>
 }

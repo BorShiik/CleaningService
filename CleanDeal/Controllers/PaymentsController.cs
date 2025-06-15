@@ -72,6 +72,7 @@ namespace CleanDeal.Controllers
                             {
                                 Name = $"Usługa sprzątania #{order.Id}"
                             }
+
                         },
                         Quantity = 1
                     }
@@ -81,10 +82,11 @@ namespace CleanDeal.Controllers
                     new { orderId }, Request.Scheme) + "&session_id ={ CHECKOUT_SESSION_ID }",
                 CancelUrl = Url.Action("Cancel", "Payments",
                     new { orderId }, Request.Scheme),
-                Metadata = new Dictionary<string, string> 
-                {
-                    { "orderId", orderId.ToString() }
-                }
+                Metadata = new Dictionary<string, string>
+    {
+                { "orderId",  orderId.ToString() },
+                { "orderType", "cleaning" }          
+            }
             };
 
             var session = await new SessionService().CreateAsync(options);

@@ -1,4 +1,5 @@
 ﻿using CleanDeal.Data;
+using CleanDeal.DTOs;
 using CleanDeal.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -62,7 +63,7 @@ namespace CleanDeal.Repositories
             return await _context.Reviews.AverageAsync(r => r.Rating);
         }
 
-        public async Task<IEnumerable<CleanDeal.DTOs.CleanerRatingDTO>> GetAverageRatingByCleanerAsync()
+        public async Task<IEnumerable<CleanerRatingDTO>> GetAverageRatingByCleanerAsync()
         {
             return await _context.Reviews
                 .Include(r => r.CleaningOrder)

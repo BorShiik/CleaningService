@@ -43,6 +43,19 @@ namespace CleanDeal.Mapping
             CreateMap<Product, ProductDTO>();
             CreateMap<ProductDTO, Product>();
 
+            CreateMap<ProductOrderItem, ProductOrderItemDTO>()
+               .ForMember(d => d.ProductName, o => o.MapFrom(s => s.Product.Name))
+               .ForMember(d => d.Price, o => o.MapFrom(s => s.Product.Price));
+
+            CreateMap<ProductOrder, ProductOrderDTO>()
+                .ForMember(d => d.PaymentAmount,
+                           o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null));
+
+            CreateMap<ProductOrderCreateViewModel, ProductOrder>()
+                .ForMember(o => o.User, opt => opt.Ignore())
+                .ForMember(o => o.Payment, opt => opt.Ignore())
+                .ForMember(o => o.Items, opt => opt.Ignore());
+
             CreateMap<ChatMessage, ChatMessageDTO>()
                 .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.FullName))
                 .ForMember(dest => dest.ReceiverName, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver.FullName : null));

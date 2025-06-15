@@ -16,6 +16,8 @@ namespace CleanDeal.Data
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
         public DbSet<Review> Reviews => Set<Review>();
         public DbSet<Product> Products => Set<Product>();
+        public DbSet<ProductOrder> ProductOrders => Set<ProductOrder>();
+        public DbSet<ProductOrderItem> ProductOrderItems => Set<ProductOrderItem>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -40,6 +42,27 @@ namespace CleanDeal.Data
                .WithOne(p => p.CleaningOrder)
                .HasForeignKey<Payment>(p => p.CleaningOrderId)
                .OnDelete(DeleteBehavior.Cascade);
+
+            b.Entity<ProductOrder>()
+               .HasOne(o => o.User)
+               .WithMany(u => u.ProductOrders)
+               .HasForeignKey(o => o.UserId);
+
+            b.Entity<ProductOrder>()
+                .HasOne(o => o.Payment)
+                .WithOne(p => p.ProductOrder)
+                .HasForeignKey<Payment>(p => p.ProductOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<ProductOrderItem>()
+                .HasOne(i => i.Product)
+                .WithMany()
+                .HasForeignKey(i => i.ProductId);
+
+            b.Entity<ProductOrderItem>()
+                .HasOne(i => i.ProductOrder)
+                .WithMany(o => o.Items)
+                .HasForeignKey(i => i.ProductOrderId);
 
             b.Entity<ChatMessage>()
                 .HasOne(m => m.Sender)

@@ -14,20 +14,27 @@ namespace CleanDeal.Repositories
         }
         public async Task<Payment?> GetByIdAsync(int id)
         {
-           return await _context.Payments.Include(p => p.CleaningOrder)
+            return await _context.Payments
+                         .Include(p => p.CleaningOrder)
+                         .Include(p => p.ProductOrder)
                          .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<Payment?> GetByOrderIdAsync(int orderId)
         {
-           return await _context.Payments.Include(p => p.CleaningOrder)
-                          .FirstOrDefaultAsync(p => p.CleaningOrderId == orderId);
+            return await _context.Payments
+                         .Include(p => p.CleaningOrder)
+                         .Include(p => p.ProductOrder)
+                         .FirstOrDefaultAsync(p =>
+                         p.CleaningOrderId == orderId || p.ProductOrderId == orderId);
         }
 
         public async Task<IEnumerable<Payment>> GetAllAsync()
         {
-            return await _context.Payments.Include(p => p.CleaningOrder)
-                          .ToListAsync();
+            return await _context.Payments
+                         .Include(p => p.CleaningOrder)
+                         .Include(p => p.ProductOrder)
+                         .ToListAsync();
         }
 
         public async Task AddAsync(Payment payment)
