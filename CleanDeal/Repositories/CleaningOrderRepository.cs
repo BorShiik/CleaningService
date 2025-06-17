@@ -95,6 +95,8 @@ namespace CleanDeal.Repositories
             if (o is null || o.Status != OrderStatus.WaitingForCleaner) return;
             o.Status = OrderStatus.InProcess;
             o.CleanerId = cleanerId;
+            var cleaner = await _context.Users.FindAsync(cleanerId);
+            o.Cleaner = cleaner;    
             await _context.SaveChangesAsync();
         }
 

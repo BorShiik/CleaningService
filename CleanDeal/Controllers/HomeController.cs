@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using CleanDeal.Models;
 using CleanDeal.Repositories;
+using CleanDeal.ViewModel;
 
 namespace CleanDeal.Controllers;
 

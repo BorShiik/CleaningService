@@ -8,7 +8,7 @@
 <section class="section dark-background py-5">
     <div class="container text-center text-white">
         <h1 class="fw-bold mb-0">Panel administratora</h1>
-        <p class="opacity-75">Podsumowanie kluczowych statystyk platformy CleanDeal</p>
+        <h5 class="opacity-75">Podsumowanie kluczowych statystyk platformy CleanDeal</h5>
     </div>
 </section>
 
@@ -70,8 +70,8 @@
 
 <section id="ratings" class="section bg-light">
     <div class="container" data-aos="fade-up">
-        <h3 class="mb-3">Średnia ocena zamówień</h3>
-        <p class="fs-4 fw-bold text-primary">
+        <h3 class="mb-3 fw-bold">Średnia ocena zamówień</h3>
+        <p class="fs-2 fw-bold text-primary">
             @Model.AverageOrderRating.ToString("0.0") / 5
         </p>
 
@@ -127,7 +127,12 @@
                             <td>@o.UserEmail</td>
                             <td>@o.ServiceTypeName</td>
                             <td>
-                                <span class="badge bg-@(o.Status=="Zakończone"?"success":"secondary")">
+                                <span class="badge bg-@(
+                                    o.Status == "Ukończone"
+                                        ? "success"
+                                        : (o.Status == "Oczekuje"
+                                        ? "secondary"
+                                        : "primary"))">
                                     @o.Status
                                 </span>
                             </td>

@@ -24,11 +24,13 @@ namespace CleanDeal.Mapping
                 .ForMember(d => d.Status,
                            o => o.MapFrom(s =>
                                   s.Status == OrderStatus.WaitingForCleaner ? "Oczekuje"
-                                    : s.Status == OrderStatus.InProcess ? "W toku"
-                                    : "Ukończone"));
+                                    : (s.Status == OrderStatus.InProcess ? "W toku"
+                                    : "Ukończone")));
 
             CreateMap<CleaningOrder, OrderCreateViewModel>()
-                .ForMember(d => d.ServiceTypeOptions, o => o.Ignore());
+                .ForMember(d => d.ServiceTypeOptions, o => o.Ignore())
+                .ForMember(d => d.UserEmail,
+                           o => o.MapFrom(s => s.User.Email));
 
             CreateMap<CleaningOrder, CleanerAvailableOrderDTO>()
                  .ForMember(d => d.ServiceName, o => o.MapFrom(s => s.ServiceType.Name));

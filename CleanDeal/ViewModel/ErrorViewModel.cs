@@ -1,4 +1,4 @@
-namespace CleanDeal.Models
+namespace CleanDeal.ViewModel
 {
     public class ErrorViewModel
     {

@@ -15,12 +15,14 @@ namespace CleanDeal.Controllers
     {
         private readonly ICleaningOrderRepository _orderRepo;
         private readonly IServiceTypeRepository _serviceTypeRepo;
+        private readonly IApplicationUserRepository _userRepo;
         private readonly IMapper _mapper;
 
-        public OrdersController(ICleaningOrderRepository orderRepo, IServiceTypeRepository serviceTypeRepo, IMapper mapper)
+        public OrdersController(ICleaningOrderRepository orderRepo, IServiceTypeRepository serviceTypeRepo, IApplicationUserRepository userRepo, IMapper mapper)
         {
             _orderRepo = orderRepo;
             _serviceTypeRepo = serviceTypeRepo;
+            _userRepo = userRepo;
             _mapper = mapper;
         }
 
@@ -72,7 +74,40 @@ namespace CleanDeal.Controllers
             }
 
             var newOrder = _mapper.Map<CleaningOrder>(model);
-            newOrder.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string userId;
+            if (User.IsInRole("Admin"))
+            {
+                if (string.IsNullOrWhiteSpace(model.UserEmail))
+                {
+                    ModelState.AddModelError("UserEmail", "Email klienta jest wymagany.");
+                    var serviceTypes = await _serviceTypeRepo.GetAllAsync();
+                    model.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
+                    {
+                        Value = st.Id.ToString(),
+                        Text = st.Name
+                    });
+                    return View(model);
+                }
+
+                var user = await _userRepo.FindByEmailAsync(model.UserEmail);
+                if (user == null)
+                {
+                    ModelState.AddModelError("UserEmail", "Nie znaleziono użytkownika o podanym email.");
+                    var serviceTypes = await _serviceTypeRepo.GetAllAsync();
+                    model.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
+                    {
+                        Value = st.Id.ToString(),
+                        Text = st.Name
+                    });
+                    return View(model);
+                }
+                userId = user.Id;
+            }
+            else
+            {
+                userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
+            newOrder.UserId = userId;
             newOrder.Status = OrderStatus.WaitingForCleaner;
             newOrder.IsCompleted = false;
 

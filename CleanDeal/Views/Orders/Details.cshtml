@@ -28,6 +28,15 @@
                             <dt class="col-sm-4">Data zlecenia</dt>
                             <dd class="col-sm-8">@Model.Date.ToString("f")</dd>
 
+                            @if (isAdmin)
+                            {
+                                <dt class="col-sm-4">Klient</dt>
+                                <dd class="col-sm-8">@(Model.UserEmail)</dd>
+
+                                <dt class="col-sm-4">Sprzątacz</dt>
+                                <dd class="col-sm-8">@(Model.CleanerName)</dd>
+                            }
+
                             <dt class="col-sm-4">Adres sprzątania</dt>
                             <dd class="col-sm-8">@Model.Address</dd>
 
@@ -100,12 +109,12 @@
                         </div>
 
                         
-                        @if (isAdmin && !Model.IsPaid)
+                        @*@if (isAdmin && !Model.IsPaid)
                         {
                             <div class="alert alert-info mt-4">
                                 <i class="bi bi-info-circle me-1"></i>
                             </div>
-                        }
+                        }*@
                     </div>
                 </div>
 
@@ -119,6 +128,6 @@
     {
         "Ukończone" => "success",
         "Oczekuje" => "warning",
-        _ => "secondary"
+        _ => "primary"
     };
 }

@@ -18,7 +18,9 @@ namespace CleanDeal.ViewModel
         [Display(Name = "Rodzaj usługi")]
         [Range(1, int.MaxValue, ErrorMessage = "Wybierz usługę.")]
         public int ServiceTypeId { get; set; }
-
+        [EmailAddress]
+        [Display(Name = "Email klienta")]
+        public string? UserEmail { get; set; }
         public IEnumerable<SelectListItem>? ServiceTypeOptions { get; set; }
     }
 }
