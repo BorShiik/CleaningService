@@ -39,6 +39,7 @@ namespace CleanDeal.Repositories
              .Include(o => o.ServiceType)
              .Include(o => o.Payment)
              .Include(o => o.Review)
+             .Include(o => o.Cleaner)
              .ToListAsync();
         }
 
@@ -49,6 +50,7 @@ namespace CleanDeal.Repositories
                 .Include(o => o.ServiceType)
                 .Include(o => o.Payment)
                 .Include(o => o.Review)
+                .Include(o => o.Cleaner)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
@@ -58,6 +60,7 @@ namespace CleanDeal.Repositories
                 .Include(o => o.ServiceType)
                 .Include(o => o.Payment)
                 .Include(o => o.Review)
+                .Include(o => o.Cleaner)
                 .Where(o => o.UserId == userId)
                 .ToListAsync();
         }

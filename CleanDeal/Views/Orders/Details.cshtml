@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = $"Zlecenie #{Model.Id}";
     var isAdmin = User.IsInRole("Admin");
+    var isClient = User.IsInRole("Client");
 }
 
 
@@ -32,9 +33,10 @@
                             {
                                 <dt class="col-sm-4">Klient</dt>
                                 <dd class="col-sm-8">@(Model.UserEmail)</dd>
-
+                            }
+                            @if (isAdmin || isClient) { 
                                 <dt class="col-sm-4">Sprzątacz</dt>
-                                <dd class="col-sm-8">@(Model.CleanerName)</dd>
+                                <dd class="col-sm-8">@(Model.Cleaner?.FullName ?? "-")</dd>
                             }
 
                             <dt class="col-sm-4">Adres sprzątania</dt>
@@ -69,53 +71,47 @@
                                 @(Model.HasReview ? $"{Model.ReviewRating} / 5" : "Brak")
                             </dd>
 
-                            @if (!string.IsNullOrEmpty(Model.Cleaner?.FullName))
-                            {
-                                <dt class="col-sm-4">Sprzątacz</dt>
-                                <dd class="col-sm-8">@Model.Cleaner.FullName</dd>
-                            }
-                        </dl>
 
-                        
-                        <div class="d-flex flex-wrap gap-2 pt-3 border-top">
-                            @if (Model.Status != "Ukończone")
-                            {
-                                <a asp-action="Edit" asp-route-id="@Model.Id"
-                                   class="btn btn-outline-primary">
-                                    <i class="bi bi-pencil-square me-1"></i>Edytuj
-                                </a>
-                            }
-                            @if (!Model.IsPaid)
-                            {
-                                <a asp-controller="Payments" asp-action="Checkout"
-                                   asp-route-id="@Model.Id" class="btn btn-success">
-                                    <i class="bi bi-credit-card me-1"></i>Zapłać
-                                </a>
-                            }
-                            @if (!Model.HasReview && Model.Status == "Ukończone")
-                            {
-                                <a asp-controller="Review" asp-action="Create"
-                                   asp-route-orderId="@Model.Id" class="btn btn-warning">
-                                    <i class="bi bi-star me-1"></i>Oceń usługę
-                                </a>
-                            }
-                            <a asp-controller="Chat" asp-action="Order"
-                               asp-route-id="@Model.Id" class="btn btn-outline-secondary">
-                                <i class="bi bi-chat-dots me-1"></i>Czat
-                            </a>
-                            <a asp-action="Index" class="btn btn-secondary ms-auto">
-                                Powrót
-                            </a>
-                        </div>
 
-                        
-                        @*@if (isAdmin && !Model.IsPaid)
-                        {
-                            <div class="alert alert-info mt-4">
-                                <i class="bi bi-info-circle me-1"></i>
+                            <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                                @if (Model.Status != "Ukończone")
+                                {
+                                    <a asp-action="Edit" asp-route-id="@Model.Id"
+                                       class="btn btn-outline-primary">
+                                        <i class="bi bi-pencil-square me-1"></i>Edytuj
+                                    </a>
+                                }
+                                @if (!Model.IsPaid)
+                                {
+                                    <a asp-controller="Payments" asp-action="Checkout"
+                                       asp-route-id="@Model.Id" class="btn btn-success">
+                                        <i class="bi bi-credit-card me-1"></i>Zapłać
+                                    </a>
+                                }
+                                @if (!Model.HasReview && Model.Status == "Ukończone")
+                                {
+                                    <a asp-controller="Review" asp-action="Create"
+                                       asp-route-orderId="@Model.Id" class="btn btn-warning">
+                                        <i class="bi bi-star me-1"></i>Oceń usługę
+                                    </a>
+                                }
+                                <a asp-controller="Chat" asp-action="Order"
+                                   asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                    <i class="bi bi-chat-dots me-1"></i>Czat
+                                </a>
+                                <a asp-action="Index" class="btn btn-secondary ms-auto">
+                                    Powrót
+                                </a>
                             </div>
-                        }*@
-                    </div>
+
+
+                            @*@if (isAdmin && !Model.IsPaid)
+        {
+            <div class="alert alert-info mt-4">
+                <i class="bi bi-info-circle me-1"></i>
+            </div>
+        }*@
+</div>
                 </div>
 
             </div>

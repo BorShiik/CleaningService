@@ -12,7 +12,6 @@ namespace CleanDeal.DTOs
         public string Status { get; set; } = string.Empty;
         public string ServiceTypeName { get; set; } = string.Empty;  
         public string UserEmail { get; set; } = string.Empty;
-        public string CleanerName { get; set; } = string.Empty;
         public bool IsPaid => PaymentAmount.HasValue;
         public decimal? PaymentAmount { get; set; }
         public decimal? TotalPrice { get; set; }
