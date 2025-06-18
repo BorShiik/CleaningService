@@ -10,7 +10,7 @@ namespace CleanDeal.DTOs
         public ApplicationUser? Cleaner { get; set; }
         public bool IsCompleted { get; set; }
         public string Status { get; set; } = string.Empty;
-        public string ServiceTypeName { get; set; } = string.Empty;  
+        public string ServiceNames { get; set; } = string.Empty;
         public string UserEmail { get; set; } = string.Empty;
         public bool IsPaid => PaymentAmount.HasValue;
         public decimal? PaymentAmount { get; set; }

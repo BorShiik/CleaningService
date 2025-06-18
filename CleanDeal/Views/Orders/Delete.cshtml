@@ -29,8 +29,14 @@
                     <dt class="col-sm-4">Adres</dt>
                     <dd class="col-sm-8">@Model.Address</dd>
 
-                    <dt class="col-sm-4">Usługa</dt>
-                    <dd class="col-sm-8">@Model.ServiceTypeName</dd>
+                    <dt class="col-sm-4">Usługi</dt>
+                    <dd class="col-sm-8">
+                        @foreach (var s in (Model.ServiceNames ?? "")
+                                          .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <span class="badge bg-primary me-1">@s.Trim()</span>
+                        }
+                    </dd>
                 </dl>
 
                 <form asp-action="Delete" asp-route-id="@Model.Id" method="post"

@@ -55,6 +55,10 @@ namespace CleanDeal.Controllers
                     Text = st.Name
                 })
             };
+
+            ViewBag.ServicePrices = serviceTypes
+            .ToDictionary(st => st.Id, st => st.BasePrice);
+
             return View(model);
         }
 
@@ -70,10 +74,19 @@ namespace CleanDeal.Controllers
                     Value = st.Id.ToString(),
                     Text = st.Name
                 });
+
+                ViewBag.ServicePrices = serviceTypes
+                .ToDictionary(st => st.Id, st => st.BasePrice);
+
                 return View(model);
             }
 
             var newOrder = _mapper.Map<CleaningOrder>(model);
+            newOrder.ServiceItems = model.ServiceTypeIds
+                .Select(id => new CleaningOrderService { ServiceTypeId = id })
+                .ToList();
+            if (model.ServiceTypeIds.Any())
+                newOrder.ServiceTypeId = model.ServiceTypeIds.First();
             string userId;
             if (User.IsInRole("Admin"))
             {
@@ -86,6 +99,10 @@ namespace CleanDeal.Controllers
                         Value = st.Id.ToString(),
                         Text = st.Name
                     });
+
+                    ViewBag.ServicePrices = serviceTypes
+                    .ToDictionary(st => st.Id, st => st.BasePrice);
+
                     return View(model);
                 }
 
@@ -99,6 +116,10 @@ namespace CleanDeal.Controllers
                         Value = st.Id.ToString(),
                         Text = st.Name
                     });
+
+                    ViewBag.ServicePrices = serviceTypes
+                    .ToDictionary(st => st.Id, st => st.BasePrice);
+
                     return View(model);
                 }
                 userId = user.Id;
@@ -156,6 +177,9 @@ namespace CleanDeal.Controllers
                 Text = st.Name
             });
 
+            ViewBag.ServicePrices = serviceTypes
+            .ToDictionary(st => st.Id, st => st.BasePrice);
+
             return View(vm);      
         }
 
@@ -171,6 +195,10 @@ namespace CleanDeal.Controllers
                     Value = st.Id.ToString(),
                     Text = st.Name
                 });
+
+                ViewBag.ServicePrices = serviceTypes
+                .ToDictionary(st => st.Id, st => st.BasePrice);
+
                 return View(model);
             }
 
@@ -189,7 +217,13 @@ namespace CleanDeal.Controllers
 
             order.Date = model.Date;
             order.Address = model.Address;
-            order.ServiceTypeId = model.ServiceTypeId;
+            order.ServiceItems.Clear();
+            foreach (var sid in model.ServiceTypeIds)
+            {
+                order.ServiceItems.Add(new CleaningOrderService { ServiceTypeId = sid });
+            }
+            if (model.ServiceTypeIds.Any())
+                order.ServiceTypeId = model.ServiceTypeIds.First();
 
             await _orderRepo.UpdateAsync(order);
             TempData["Message"] = "Zamówienie zaktualizowano.";

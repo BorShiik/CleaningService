@@ -37,6 +37,7 @@ namespace CleanDeal.Repositories
             return await _context.CleaningOrders
              .Include(o => o.User)
              .Include(o => o.ServiceType)
+             .Include(o => o.ServiceItems).ThenInclude(si => si.ServiceType)
              .Include(o => o.Payment)
              .Include(o => o.Review)
              .Include(o => o.Cleaner)
@@ -48,6 +49,7 @@ namespace CleanDeal.Repositories
             return await _context.CleaningOrders
                 .Include(o => o.User)
                 .Include(o => o.ServiceType)
+                .Include(o => o.ServiceItems).ThenInclude(si => si.ServiceType)
                 .Include(o => o.Payment)
                 .Include(o => o.Review)
                 .Include(o => o.Cleaner)
@@ -58,6 +60,7 @@ namespace CleanDeal.Repositories
         {
             return await _context.CleaningOrders
                 .Include(o => o.ServiceType)
+                .Include(o => o.ServiceItems).ThenInclude(si => si.ServiceType)
                 .Include(o => o.Payment)
                 .Include(o => o.Review)
                 .Include(o => o.Cleaner)
@@ -83,12 +86,14 @@ namespace CleanDeal.Repositories
         public async Task<IEnumerable<CleaningOrder>> GetAvailableAsync() =>
         await _context.CleaningOrders
             .Include(o => o.ServiceType)
+            .Include(o => o.ServiceItems).ThenInclude(si => si.ServiceType)
             .Where(o => o.Status == OrderStatus.WaitingForCleaner)
             .ToListAsync();
 
         public async Task<IEnumerable<CleaningOrder>> GetByCleanerAsync(string cleanerId) =>
             await _context.CleaningOrders
                 .Include(o => o.ServiceType)
+                .Include(o => o.ServiceItems).ThenInclude(si => si.ServiceType)
                 .Where(o => o.CleanerId == cleanerId)
                 .ToListAsync();
 
