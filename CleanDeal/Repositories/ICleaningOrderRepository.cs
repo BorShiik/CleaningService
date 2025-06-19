@@ -8,6 +8,7 @@ namespace CleanDeal.Repositories
         Task<IEnumerable<CleaningOrder>> GetAllAsync();
         Task<IEnumerable<CleaningOrder>> GetByUserIdAsync(string userId);
         Task<IEnumerable<CleaningOrder>> GetRecentOrdersAsync(int count);
+        Task<IEnumerable<CleaningOrder>> GetOrdersPagedAsync(int skip, int take);
         Task<IEnumerable<CleaningOrder>> GetAvailableAsync();
         Task<IEnumerable<CleaningOrder>> GetByCleanerAsync(string cleanerId);
         Task AcceptAsync(int id, string cleanerId);

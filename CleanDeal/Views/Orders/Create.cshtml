@@ -74,7 +74,6 @@
                         </div>
                     }
 
-                    <!--  Łączna kwota  -->
                     <div class="mb-4">
                         <h5 class="fw-semibold mb-1">Łączna kwota</h5>
                         <p id="totalPrice" class="fs-4 fw-bold mb-0">0,00 zł</p>
@@ -98,7 +97,6 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // podświetlanie wiersza + aktualizacja ceny
         const checkboxes = document.querySelectorAll('input[name="ServiceTypeIds"]');
         const totalLbl = document.getElementById('totalPrice');
 

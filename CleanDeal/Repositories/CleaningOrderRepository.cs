@@ -77,6 +77,17 @@ namespace CleanDeal.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<CleaningOrder>> GetOrdersPagedAsync(int skip, int take)
+        {
+            return await _context.CleaningOrders
+                .Include(o => o.User)
+                .Include(o => o.ServiceType)
+                .OrderByDescending(o => o.Date)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+        }
+
         public async Task UpdateAsync(CleaningOrder order)
         {
             _context.CleaningOrders.Update(order);

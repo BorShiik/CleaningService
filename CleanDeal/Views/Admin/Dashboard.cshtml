@@ -115,38 +115,15 @@
                         <th>Użytkownik</th>
                         <th>Usługa</th>
                         <th>Status</th>
-                        <th class="text-center">Akcje</th>   
+                        <th class="text-center">Akcje</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var o in Model.RecentOrders)
-                    {
-                        <tr>
-                            <td>@o.Id</td>
-                            <td>@o.Date:g</td>
-                            <td>@o.UserEmail</td>
-                            <td>@o.ServiceNames</td>
-                            <td>
-                                <span class="badge bg-@(
-                                    o.Status == "Ukończone"
-                                        ? "success"
-                                        : (o.Status == "Oczekuje"
-                                        ? "secondary"
-                                        : "primary"))">
-                                    @o.Status
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <a asp-controller="Orders" asp-action="Details"
-                                   asp-route-id="@o.Id"
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Detale
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
+                <tbody id="orders-table-body">
+                    @await Html.PartialAsync("OrderRows", Model.RecentOrders)
             </table>
+            <div class="text-center mt-3">
+                <button id="load-more-btn" class="btn btn-outline-primary" data-skip="@Model.RecentOrders.Count" data-total="@Model.TotalOrders">Pokaż więcej</button>
+            </div>
         </div>
     </div>
 </section>
@@ -162,4 +139,31 @@
             line-height: 1;
         }
     </style>
+}
+
+@section Scripts {
+    <script>
+        const btn = document.getElementById('load-more-btn');
+        const tbody = document.getElementById('orders-table-body');
+        if (btn) {
+            btn.addEventListener('click', async () => {
+                let skip = parseInt(btn.getAttribute('data-skip'));
+                const total = parseInt(btn.getAttribute('data-total'));
+                const resp = await fetch(`/Admin/LoadOrders?skip=${skip}`);
+                if (resp.ok) {
+                    const html = await resp.text();
+                    if (html.trim() === '') {
+                        btn.style.display = 'none';
+                        return;
+                    }
+                    tbody.insertAdjacentHTML('beforeend', html);
+                    skip += 5;
+                    btn.setAttribute('data-skip', skip);
+                    if (skip >= total) {
+                        btn.style.display = 'none';
+                    }
+                }
+            });
+        }
+    </script>
 }

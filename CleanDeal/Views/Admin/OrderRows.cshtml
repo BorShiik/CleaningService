@@ -1,0 +1,20 @@
+﻿@model IEnumerable<CleanDeal.DTOs.CleaningOrderDTO>
+@foreach (var o in Model)
+{
+    <tr>
+        <td>@o.Id</td>
+        <td>@o.Date:g</td>
+        <td>@o.UserEmail</td>
+        <td>@o.ServiceNames</td>
+        <td>
+            <span class="badge bg-@(o.Status == "Ukończone" ? "success" : (o.Status == "Oczekuje" ? "secondary" : "primary"))">
+                @o.Status
+            </span>
+        </td>
+        <td class="text-center">
+            <a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i> Detale
+            </a>
+        </td>
+    </tr>
+}

@@ -58,5 +58,13 @@ namespace CleanDeal.Controllers
 
             return View(dashboardVm);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadOrders(int skip)
+        {
+            var orders = await _orderRepo.GetOrdersPagedAsync(skip, 5);
+            var ordersDto = _mapper.Map<List<CleaningOrderDTO>>(orders);
+            return PartialView("OrderRows", ordersDto);
+        }
     }
 }

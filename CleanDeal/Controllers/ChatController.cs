@@ -60,7 +60,7 @@ namespace CleanDeal.Controllers
                         Content = "Hello, your cleaner is on the way!",
                         SentAt = DateTime.UtcNow
                     });
-                    await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);  
+                   
                     messages = await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);
                 }
             }
