@@ -30,13 +30,14 @@
             const nameSpan = document.createElement('span');
             const fullName =
                 msg.senderFullName    ??   
-                msg.senderName        ??  
-                msg.username          ??  
-                msg.email             ??  
-                msg.senderId;          
-            const isAdmin = msg.isAdmin || msg.senderRole === 'Admin';
+                msg.senderName        ??   
+                msg.senderemail       ??  
+                msg.senderId;
+            const isAdmin = msg.IsAdmin;
             nameSpan.textContent = fullName;
-            nameSpan.className   = isAdmin ? 'text-danger' : 'text-muted';
+            nameSpan.className = `fw-bold text-black ${isAdmin ? 'text-danger' : 'text-muted'}`;
+            bubble.className = `chat-bubble ${isAdmin ? 'admin' : (mine ? 'me' : 'you')}`;
+
 
             const timeSpan = document.createElement('span');
             timeSpan.className = 'text-muted';
@@ -120,12 +121,17 @@
                 <div id="messagesList" class="chat-messages">
 				@foreach (var m in Model.Messages)
 				{
-				    var cls = m.SenderName == "Admin" ? "admin"
-				            : m.SenderId  == ViewBag.CurrentUserId ? "me" : "you";
+					var cls = m.SenderId == ViewBag.CurrentUserId 
+						? "me" 
+						: m.IsAdmin ? "admin" : "you";
 
 				    <div class="d-flex flex-column @(cls=="me"?"align-items-end":"align-items-start") mb-2">
 				        <div class="chat-bubble @cls">@m.Content</div>
-				        <div class="chat-meta">@m.SentAt.ToLocalTime()</div>
+				        <div class="chat-meta">
+					        <span class="fw-bold text-black">@m.Sender.FullName</span>
+					        &nbsp;•&nbsp;
+					        @m.SentAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+				        </div>
 				    </div>
 				}
 				</div>

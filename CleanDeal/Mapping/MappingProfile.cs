@@ -71,8 +71,9 @@ namespace CleanDeal.Mapping
                 .ForMember(o => o.Items, opt => opt.Ignore());
 
             CreateMap<ChatMessage, ChatMessageDTO>()
-                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.FullName))
-                .ForMember(dest => dest.ReceiverName, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver.FullName : null));
+                .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))
+                .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver : null))
+                .ForMember(d => d.IsAdmin, o => o.Ignore());
 
             CreateMap<Review, ReviewDTO>();
 

@@ -38,7 +38,7 @@ namespace CleanDeal.Controllers
                           : User.IsInRole("Cleaner")
                               ? await _orderRepo.GetByCleanerAsync(userId)
                               : await _orderRepo.GetByUserIdAsync(userId);
-
+            var currentUser = await _userMgr.GetUserAsync(User);
             int selectedOrderId =
                 (id.HasValue && orders.Any(o => o.Id == id))     
                            ? id.Value
@@ -57,6 +57,7 @@ namespace CleanDeal.Controllers
                     {
                         CleaningOrderId = selectedOrderId,
                         SenderId = adminUser.Id,
+                        Sender = adminUser,
                         Content = "Hello, your cleaner is on the way!",
                         SentAt = DateTime.UtcNow
                     });
@@ -64,13 +65,17 @@ namespace CleanDeal.Controllers
                     messages = await _chatRepo.GetMessagesByOrderIdAsync(selectedOrderId);
                 }
             }
-
+            var adminUsers = await _userMgr.GetUsersInRoleAsync("Admin"); 
+            var adminIds = adminUsers.Select(u => u.Id).ToHashSet();
             var vm = new ChatPageViewModel
             {
                 Orders = orders.ToList(),
                 SelectedOrderId = selectedOrderId,
-                Messages = _mapper.Map<List<ChatMessageDTO>>(messages),
-                ReceiverId = null
+                Messages = _mapper.Map<List<ChatMessageDTO>>(messages)
+                    .Select(dto => { dto.IsAdmin = adminIds.Contains(dto.SenderId); return dto; })
+                    .ToList(),
+                ReceiverId = null,
+                Sender = currentUser
             };
 
             ViewBag.CurrentUserId = userId;

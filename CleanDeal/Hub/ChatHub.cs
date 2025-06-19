@@ -11,11 +11,13 @@ namespace CleanDeal.Hubs
     {
         private readonly IChatMessageRepository _chatRepo;
         private readonly ICleaningOrderRepository _orderRepo;
+        private readonly IApplicationUserRepository _userRepo;
 
-        public ChatHub(IChatMessageRepository chatRepo, ICleaningOrderRepository orderRepo)
+        public ChatHub(IChatMessageRepository chatRepo, ICleaningOrderRepository orderRepo, IApplicationUserRepository userRepo)
         {
             _chatRepo = chatRepo;
             _orderRepo = orderRepo;
+            _userRepo = userRepo;
         }
 
         public async Task JoinOrderGroup(int orderId)
@@ -28,13 +30,19 @@ namespace CleanDeal.Hubs
             var senderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(senderId))
                 throw new Exception("SenderId is null");
-
+            var sender = await _userRepo.GetByIdAsync(senderId);
+            if(sender==null)
+                throw new Exception("Sender is null");
+            var receiver = await _userRepo.GetByIdAsync(receiverId);
+            bool isAdmin = Context.User.IsInRole("Admin");
             var message = new ChatMessage
             {
                 CleaningOrderId = orderId,
                 Content = content,
                 SenderId = senderId,
+                Sender = sender,
                 ReceiverId = string.IsNullOrWhiteSpace(receiverId) ? null : receiverId,
+                Receiver = receiver,
                 SentAt = DateTime.UtcNow
             };
             await _chatRepo.AddAsync(message);
@@ -44,7 +52,8 @@ namespace CleanDeal.Hubs
                 OrderId = orderId,
                 Content = content,
                 SenderId = senderId,
-                SenderName = Context.User?.Identity?.Name, 
+                SenderName = sender.FullName,
+                isAdmin = isAdmin,
                 ReceiverId = message.ReceiverId,
                 SentAt = message.SentAt
             });
