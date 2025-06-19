@@ -18,6 +18,7 @@ namespace CleanDeal.Data
         public DbSet<Product> Products => Set<Product>();
         public DbSet<ProductOrder> ProductOrders => Set<ProductOrder>();
         public DbSet<ProductOrderItem> ProductOrderItems => Set<ProductOrderItem>();
+        public DbSet<CleaningOrderService> CleaningOrderServices => Set<CleaningOrderService>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -42,6 +43,12 @@ namespace CleanDeal.Data
                .WithOne(p => p.CleaningOrder)
                .HasForeignKey<Payment>(p => p.CleaningOrderId)
                .OnDelete(DeleteBehavior.Cascade);
+
+            b.Entity<CleaningOrder>()
+               .HasOne(o => o.ServiceType)
+               .WithMany()
+               .HasForeignKey(o => o.ServiceTypeId)
+               .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<ProductOrder>()
                .HasOne(o => o.User)
@@ -74,6 +81,18 @@ namespace CleanDeal.Data
                 .HasOne(m => m.Receiver)
                 .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(m => m.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<CleaningOrderService>()
+                 .HasOne(os => os.CleaningOrder)
+                 .WithMany(o => o.ServiceItems)
+                 .HasForeignKey(os => os.CleaningOrderId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+            b.Entity<CleaningOrderService>()
+                .HasOne(os => os.ServiceType)
+                .WithMany()
+                .HasForeignKey(os => os.ServiceTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<Review>()

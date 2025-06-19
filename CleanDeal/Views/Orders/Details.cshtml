@@ -3,8 +3,8 @@
     ViewData["Title"] = $"Zlecenie #{Model.Id}";
     var isAdmin = User.IsInRole("Admin");
     var isClient = User.IsInRole("Client");
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-
 
 <section class="section dark-background py-5">
     <div class="container text-center text-white">
@@ -13,10 +13,8 @@
     </div>
 </section>
 
-
 <section class="section">
     <div class="container" data-aos="fade-up">
-
         <div class="row justify-content-center">
             <div class="col-lg-8">
 
@@ -27,23 +25,30 @@
 
                         <dl class="row">
                             <dt class="col-sm-4">Data zlecenia</dt>
-                            <dd class="col-sm-8">@Model.Date.ToString("f")</dd>
+                            <dd class="col-sm-8">@Model.Date.ToString("f", pl)</dd>
 
                             @if (isAdmin)
                             {
                                 <dt class="col-sm-4">Klient</dt>
-                                <dd class="col-sm-8">@(Model.UserEmail)</dd>
+                                <dd class="col-sm-8">@Model.UserEmail</dd>
                             }
-                            @if (isAdmin || isClient) { 
+                            @if (isAdmin || isClient)
+                            {
                                 <dt class="col-sm-4">Sprzątacz</dt>
-                                <dd class="col-sm-8">@(Model.Cleaner?.FullName ?? "-")</dd>
+                                <dd class="col-sm-8">@((Model.Cleaner?.FullName) ?? "-")</dd>
                             }
 
                             <dt class="col-sm-4">Adres sprzątania</dt>
                             <dd class="col-sm-8">@Model.Address</dd>
 
-                            <dt class="col-sm-4">Rodzaj usługi</dt>
-                            <dd class="col-sm-8">@Model.ServiceTypeName</dd>
+                            <dt class="col-sm-4">Rodzaje usług</dt>
+                            <dd class="col-sm-8">
+                                @foreach (var s in (Model.ServiceNames ?? "")
+                                                  .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <span class="badge bg-primary me-1">@s.Trim()</span>
+                                }
+                            </dd>
 
                             <dt class="col-sm-4">Status</dt>
                             <dd class="col-sm-8">
@@ -63,55 +68,47 @@
 
                             <dt class="col-sm-4">Kwota</dt>
                             <dd class="col-sm-8 fw-semibold">
-                                @Model.TotalPrice.ToString() zł
+                                @Model.TotalPrice?.ToString("c", pl) 
                             </dd>
 
                             <dt class="col-sm-4">Ocena klienta</dt>
                             <dd class="col-sm-8">
                                 @(Model.HasReview ? $"{Model.ReviewRating} / 5" : "Brak")
                             </dd>
+                        </dl>
 
-
-
-                            <div class="d-flex flex-wrap gap-2 pt-3 border-top">
-                                @if (Model.Status != "Ukończone")
-                                {
-                                    <a asp-action="Edit" asp-route-id="@Model.Id"
-                                       class="btn btn-outline-primary">
-                                        <i class="bi bi-pencil-square me-1"></i>Edytuj
-                                    </a>
-                                }
-                                @if (!Model.IsPaid)
-                                {
-                                    <a asp-controller="Payments" asp-action="Checkout"
-                                       asp-route-id="@Model.Id" class="btn btn-success">
-                                        <i class="bi bi-credit-card me-1"></i>Zapłać
-                                    </a>
-                                }
-                                @if (!Model.HasReview && Model.Status == "Ukończone")
-                                {
-                                    <a asp-controller="Review" asp-action="Create"
-                                       asp-route-orderId="@Model.Id" class="btn btn-warning">
-                                        <i class="bi bi-star me-1"></i>Oceń usługę
-                                    </a>
-                                }
-                                <a asp-controller="Chat" asp-action="Order"
-                                   asp-route-id="@Model.Id" class="btn btn-outline-secondary">
-                                    <i class="bi bi-chat-dots me-1"></i>Czat
+                        <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                            @if (Model.Status != "Ukończone")
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id"
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil-square me-1"></i>Edytuj
                                 </a>
-                                <a asp-action="Index" class="btn btn-secondary ms-auto">
-                                    Powrót
+                            }
+                            @if (!Model.IsPaid)
+                            {
+                                <a asp-controller="Payments" asp-action="Checkout"
+                                   asp-route-id="@Model.Id" class="btn btn-success">
+                                    <i class="bi bi-credit-card me-1"></i>Zapłać
                                 </a>
-                            </div>
+                            }
+                            @if (!Model.HasReview && Model.Status == "Ukończone")
+                            {
+                                <a asp-controller="Review" asp-action="Create"
+                                   asp-route-orderId="@Model.Id" class="btn btn-warning">
+                                    <i class="bi bi-star me-1"></i>Oceń usługę
+                                </a>
+                            }
+                            <a asp-controller="Chat" asp-action="Order"
+                               asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="bi bi-chat-dots me-1"></i>Czat
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary ms-auto">
+                                Powrót
+                            </a>
+                        </div>
 
-
-                            @*@if (isAdmin && !Model.IsPaid)
-        {
-            <div class="alert alert-info mt-4">
-                <i class="bi bi-info-circle me-1"></i>
-            </div>
-        }*@
-</div>
+                    </div>
                 </div>
 
             </div>

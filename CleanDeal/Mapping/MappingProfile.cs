@@ -9,8 +9,10 @@ namespace CleanDeal.Mapping
     {
         public MappingProfile() {
             CreateMap<CleaningOrder, CleaningOrderDTO>()
-                .ForMember(d => d.ServiceTypeName,
-                           o => o.MapFrom(s => s.ServiceType.Name))
+                .ForMember(d => d.ServiceNames,
+                           o => o.MapFrom(s => string.Join(", ", s.ServiceItems.Any()
+                                ? s.ServiceItems.Select(si => si.ServiceType.Name)
+                                : new[] { s.ServiceType.Name })))
                 .ForMember(d => d.PaymentAmount,
                            o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
                 .ForMember(d => d.TotalPrice,
@@ -29,14 +31,24 @@ namespace CleanDeal.Mapping
 
             CreateMap<CleaningOrder, OrderCreateViewModel>()
                 .ForMember(d => d.ServiceTypeOptions, o => o.Ignore())
+                .ForMember(d => d.ServiceTypeIds,
+                           o => o.MapFrom(s => s.ServiceItems.Any()
+                               ? s.ServiceItems.Select(si => si.ServiceTypeId)
+                               : new[] { s.ServiceTypeId }))
                 .ForMember(d => d.UserEmail,
                            o => o.MapFrom(s => s.User.Email));
 
             CreateMap<CleaningOrder, CleanerAvailableOrderDTO>()
-                 .ForMember(d => d.ServiceName, o => o.MapFrom(s => s.ServiceType.Name));
+                 .ForMember(d => d.ServiceNames,
+                           o => o.MapFrom(s => string.Join(", ", s.ServiceItems.Any()
+                                ? s.ServiceItems.Select(si => si.ServiceType.Name)
+                                : new[] { s.ServiceType.Name })));
 
             CreateMap<CleaningOrder, CleanerMyOrderDTO>()
-                .ForMember(d => d.ServiceName, o => o.MapFrom(s => s.ServiceType.Name))
+                .ForMember(d => d.ServiceNames,
+                           o => o.MapFrom(s => string.Join(", ", s.ServiceItems.Any()
+                                ? s.ServiceItems.Select(si => si.ServiceType.Name)
+                                : new[] { s.ServiceType.Name })))
                 .ForMember(d => d.Status, o => o.MapFrom(s =>
                     s.Status == OrderStatus.Finished ? "Ukończone" : "W trakcie"))
                 .ForMember(d => d.CanComplete, o => o.MapFrom(s => s.Status == OrderStatus.InProcess));
@@ -66,8 +78,9 @@ namespace CleanDeal.Mapping
             CreateMap<Review, ReviewDTO>();
 
             CreateMap<OrderCreateViewModel, CleaningOrder>()
-                .ForMember(co => co.ServiceType, opt => opt.Ignore())  
-                .ForMember(co => co.User, opt => opt.Ignore())        
+                .ForMember(co => co.ServiceType, opt => opt.Ignore())
+                .ForMember(co => co.User, opt => opt.Ignore())
+                .ForMember(co => co.ServiceItems, opt => opt.Ignore())
                 .ForMember(co => co.Payment, opt => opt.Ignore())
                 .ForMember(co => co.Review, opt => opt.Ignore())
                 .ForMember(co => co.ChatMessages, opt => opt.Ignore());

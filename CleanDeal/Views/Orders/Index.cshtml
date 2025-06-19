@@ -7,7 +7,6 @@
     var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
 
-
 <section class="section dark-background py-4">
     <div class="container text-center text-white">
         <h1 class="fw-bold mb-0">
@@ -16,18 +15,15 @@
     </div>
 </section>
 
-
 <section class="section">
     <div class="container" data-aos="fade-up">
 
-        
         <div class="d-flex justify-content-end mb-3">
             <a asp-action="Create" class="btn btn-success">
                 <i class="bi bi-plus-circle me-1"></i>Nowe zamówienie
             </a>
         </div>
 
-        
         <div class="card shadow-sm border-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -48,16 +44,22 @@
                                 <tr>
                                     <td>@o.Id</td>
                                     <td>@o.Date.ToString("g", pl)</td>
-                                    <td>@o.ServiceTypeName</td>
+
                                     <td>
-                                        @* podstawowy status *@
+                                        @foreach (var s in (o.ServiceNames ?? "")
+                                                        .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-primary me-1">@s.Trim()</span>
+                                        }
+                                    </td>
+
+                                    <td>
                                         @(o.Status switch
-                                      {
-                                          "Ukończone" => "Ukończone",
-                                          "Oczekuje"  => "Oczekuje",
-                                          _           => "W toku"
-                                      })
-                                        @* badge płatności *@
+                                          {
+                                              "Ukończone" => "Ukończone",
+                                              "Oczekuje"  => "Oczekuje",
+                                              _           => "W toku"
+                                          })
                                         @if (o.IsPaid)
                                         {
                                             <span class="badge bg-success ms-1">Opłacone</span>
@@ -69,10 +71,8 @@
                                     </td>
                                     <td>@(o.TotalPrice?.ToString("c", pl) ?? "-")</td>
 
-                                    
                                     <td class="text-end">
                                         <div class="btn-group" role="group">
-                                            
                                             @if (isAdmin)
                                             {
                                                 <a class="btn btn-primary"
@@ -82,14 +82,13 @@
                                                     <i class="bi bi-chat-dots"></i>
                                                 </a>
                                             }
-                                            
+
                                             <a asp-action="Details"
                                                asp-route-id="@o.Id"
                                                class="btn btn-outline-primary">
                                                 <i class="bi bi-search"></i>
                                             </a>
 
-                                         
                                             @if (o.Status != "Ukończone")
                                             {
                                                 <a asp-action="Edit"
@@ -99,7 +98,6 @@
                                                 </a>
                                             }
 
-                                            
                                             @if (!o.IsPaid && isClient)
                                             {
                                                 <a asp-controller="Payments"
@@ -110,13 +108,11 @@
                                                 </a>
                                             }
 
-                                           
                                             @if (isAdmin && !o.IsPaid)
                                             {
                                                 <a asp-action="Delete"
                                                    asp-route-id="@o.Id"
-                                                   class="btn btn-danger"
-                                                   >
+                                                   class="btn btn-danger">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
                                             }
