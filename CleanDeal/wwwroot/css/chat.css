@@ -51,12 +51,6 @@
     font-size: 1rem
 }
 
-.chat-bubble.admin {
-    background: #198754;
-    color: #fff;
-    border-bottom-left-radius: 0
-}
-
 .chat-header {
     background: #f1f3f5;
     padding: .5rem .9rem;
