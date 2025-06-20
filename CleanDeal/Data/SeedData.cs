@@ -31,6 +31,24 @@ namespace CleanDeal.Data
             const string adminEmail = "admin@cleaning.local";
             const string adminPass = "Admin123$";
 
+            const string cleanerEmail = "Cleaner@test.com";
+            const string cleanerPass = "Cleaner123$";
+
+            var cleaner = await userManager.FindByEmailAsync(cleanerEmail);
+            if(cleaner is null)
+            {
+                cleaner = new ApplicationUser
+                {
+                    UserName = cleanerEmail,
+                    Email = cleanerEmail,
+                    EmailConfirmed = true,
+                    FullName = "Cleaner Test"
+                };
+                var result = await userManager.CreateAsync(cleaner, cleanerPass);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(cleaner, "Cleaner");
+            }
+
             var admin = await userManager.FindByEmailAsync(adminEmail);
             if (admin is null)
             {
@@ -88,6 +106,7 @@ namespace CleanDeal.Data
                 await userManager.CreateAsync(client, "Client123$");
                 await userManager.AddToRoleAsync(client, "Client");
 
+
                 var order = new CleaningOrder
                 {
                     UserId = client.Id,
@@ -96,6 +115,7 @@ namespace CleanDeal.Data
                                                  .Select(s => s.Id)
                                                  .FirstAsync(),
                     Address = "ul. Przykładowa 1, Kraków",
+                    Cleaner = await userManager.FindByEmailAsync(cleanerEmail),
                     Date = DateTime.Today.AddDays(2).AddHours(9),
                     Status = OrderStatus.Finished,
                     IsCompleted = true

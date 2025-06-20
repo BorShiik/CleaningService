@@ -126,7 +126,7 @@ namespace CleanDeal.Controllers
             }
             else
             {
-                userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             }
             newOrder.UserId = userId;
             newOrder.Status = OrderStatus.WaitingForCleaner;
