@@ -91,7 +91,7 @@ Architektura opiera się na wzorcu MVC, warstwie repozytoriów oraz separacji DT
 
 ## Struktura katalogów
 
-'''
+```
 CleanDeal/
 ├── Controllers/ # kontrolery MVC (Orders, Payments, Chat, Admin…)
 ├── Data/
@@ -103,6 +103,6 @@ CleanDeal/
 ├── Views/ # Razor Views (Bootstrap 5)
 ├── wwwroot/ # statyczne zasoby (css, js, images)
 └── Program.cs # konfiguracja DI, Identity, Stripe, SignalR
-'''
+```
 
 ---
