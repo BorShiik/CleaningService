@@ -59,7 +59,15 @@ namespace CleanDeal.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            [Display(Name = "P?e?")]
+            public Gender? Gender { get; set; }
+
+            [Display(Name = "Avatar")]
+            public IFormFile? AvatarFile { get; set; }
         }
+
+        public string? AvatarBase64 { get; set; }
 
         private async Task LoadAsync(ApplicationUser user)
         {
@@ -68,9 +76,13 @@ namespace CleanDeal.Areas.Identity.Pages.Account.Manage
 
             Username = userName;
 
+            if (user.Avatar != null)
+                AvatarBase64 = "data:image/png;base64," + Convert.ToBase64String(user.Avatar);
+
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                Gender = user.Gender
             };
         }
 
@@ -81,6 +93,8 @@ namespace CleanDeal.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
+            if (user.Avatar != null)
+                AvatarBase64 = "data:image/png;base64," + Convert.ToBase64String(user.Avatar);
 
             await LoadAsync(user);
             return Page();
@@ -111,9 +125,34 @@ namespace CleanDeal.Areas.Identity.Pages.Account.Manage
                 }
             }
 
+            if (Input.Gender != user.Gender)
+            {
+                user.Gender = Input.Gender;
+            }
+
+            if (Input.AvatarFile != null && Input.AvatarFile.Length > 0)
+            {
+                using var ms = new MemoryStream();
+                await Input.AvatarFile.CopyToAsync(ms);
+                if (ms.Length > 2 * 1024 * 1024)    // 2 Mb
+                {
+                    ModelState.AddModelError("Input.AvatarFile", "Plik > 2 ла");
+                    return Page();
+                }
+                user.Avatar = ms.ToArray();
+            }
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                StatusMessage = "Unexpected error when trying to save profile.";
+                return RedirectToPage();
+            }
+
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
         }
+
     }
 }

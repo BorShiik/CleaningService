@@ -34,6 +34,10 @@ public class RegisterModel : PageModel
         [Required, Display(Name = "Imię i nazwisko")]
         public string FullName { get; set; } = string.Empty;
 
+        [Required]
+        [Display(Name = "Płeć")]
+        public Gender Gender { get; set; }
+
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
 
@@ -64,7 +68,8 @@ public class RegisterModel : PageModel
         {
             UserName = Input.Email,
             Email = Input.Email,
-            FullName = Input.FullName      
+            FullName = Input.FullName,
+            Gender = Input.Gender
         };
         var result = await _userManager.CreateAsync(user, Input.Password);
         if (!result.Succeeded)

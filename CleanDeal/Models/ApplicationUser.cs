@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CleanDeal.Models
 {
+    public enum Gender
+    {
+        Mężczyzna,
+        Kobieta
+    }
     public class ApplicationUser : IdentityUser
     {
         [Required, MaxLength(150)]
@@ -14,5 +19,7 @@ namespace CleanDeal.Models
         public ICollection<ChatMessage> SentMessages { get; set; }
         public ICollection<ChatMessage> ReceivedMessages { get; set; }
         public ICollection<Review>? Reviews { get; set; }
+        public byte[]? Avatar { get; set; }
+        public Gender? Gender { get; set; }
     }
 }

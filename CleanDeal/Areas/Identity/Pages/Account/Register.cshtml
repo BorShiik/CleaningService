@@ -26,8 +26,19 @@
 		                            <label asp-for="Input.FullName" class="form-label"></label>
 		                            <span asp-validation-for="Input.FullName" class="text-danger"></span>
 	                            </div>
+								
+	                            <!-- płeć -->
+	                            <div class="mb-3">
+		                            <label asp-for="Input.Gender" class="form-label"></label>
+		                            <select asp-for="Input.Gender" class="form-select"
+		                                    asp-items="Html.GetEnumSelectList<Gender>()">
+			                            <option disabled selected value="">— выбрать —</option>
+		                            </select>
+		                            <span asp-validation-for="Input.Gender" class="text-danger"></span>
+	                            </div>
 
-                                <!-- e-mail -->
+
+	                            <!-- e-mail -->
                                 <div class="form-outline mb-4">
                                     <input asp-for="Input.Email"
                                            class="form-control form-control-lg" />
