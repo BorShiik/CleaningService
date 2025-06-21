@@ -75,7 +75,9 @@ namespace CleanDeal.Mapping
                 .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => src.Receiver != null ? src.Receiver : null))
                 .ForMember(d => d.IsAdmin, o => o.Ignore());
 
-            CreateMap<Review, ReviewDTO>();
+            CreateMap<Review, ReviewDTO>()
+                .ForMember(d => d.UserFullName,
+                           o => o.MapFrom(s => s.CleaningOrder.User.FullName));
 
             CreateMap<OrderCreateViewModel, CleaningOrder>()
                 .ForMember(co => co.ServiceType, opt => opt.Ignore())
