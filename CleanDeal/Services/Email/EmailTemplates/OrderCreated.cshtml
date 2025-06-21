@@ -1,0 +1,12 @@
+﻿@model CleanDeal.Models.CleaningOrder 
+<p>Dzień dobry!</p>
+<p>Twoje zamówienie nr <strong>@Model.Id</strong> zostało przyjęte.</p>
+<table style="border-collapse:collapse;"> 
+    <tr><td><strong>Data:</strong></td>
+        <td>@Model.Date.ToString("dd.MM.yyyy HH:mm")</td>
+    </tr> <tr><td><strong>Adres:</strong></td>
+        <td>@Model.Address</td></tr>
+    <tr><td><strong>Rodzaj usługi:</strong></td><td>@Model.ServiceType.Name</td></tr>
+</table>
+<p>Wkrótce jeden z naszych sprzątaczy zaakceptuje zlecenie.</p>
+<p>Dziękujemy, że korzystasz z CleanDeal!</p>
