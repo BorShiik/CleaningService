@@ -3,6 +3,9 @@ using CleanDeal.Repositories;
 using CleanDeal.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using CleanDeal.Services.Email;
+using CleanDeal.Models.Email;
+using Microsoft.Extensions.Options;
 
 
 
@@ -42,6 +45,18 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ICleaningOrderRepository, CleaningOrderRepository>();
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 builder.Services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddSingleton<TemplateRenderer>();
+builder.Services.AddTransient<IEmailSender>(sp =>
+{
+    var opts = sp.GetRequiredService<IOptions<EmailSettings>>().Value;
+
+    return (IEmailSender)(opts.Provider?.ToLowerInvariant() switch
+    {
+        "Resend" => ActivatorUtilities.CreateInstance<ResendEmailSender>(sp)
+    });
+});
 
 var app = builder.Build();
 
