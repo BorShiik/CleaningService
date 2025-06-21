@@ -1,0 +1,104 @@
+﻿@model CleanDeal.DTOs.ProductOrderDTO
+@{
+    ViewData["Title"] = $"Zamówienie #{Model.Id}";
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
+}
+
+
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-receipt me-2"></i>@ViewData["Title"]
+        </h1>
+    </div>
+</section>
+
+
+<section class="section">
+    <div class="container" data-aos="fade-up">
+
+        <div class="row g-4">
+
+            
+            <div class="col-lg-4">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header">
+                        <strong>Szczegóły zamówienia</strong>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Data zamówienia</dt>
+                            <dd class="col-sm-7">@Model.OrderDate.ToString("f", pl)</dd>
+
+                            <dt class="col-sm-5">Adres</dt>
+                            <dd class="col-sm-7">@Model.Address</dd>
+
+                            <dt class="col-sm-5">Dostawa</dt>
+                            <dd class="col-sm-7">@Model.DeliveryMethod</dd>
+
+                            <dt class="col-sm-5">Status</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.PaymentAmount.HasValue)
+                                {
+                                    <span class="badge bg-success">Opłacone</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Nieopłacone</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-5">Kwota</dt>
+                            <dd class="col-sm-7">
+                                @((Model.PaymentAmount ?? 0).ToString("c", pl))
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- карточка товаров -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header">
+                        <strong>Produkty</strong>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nazwa</th>
+                                        <th>Ilość</th>
+                                        <th class="text-end">Cena</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items ?? Enumerable.Empty<CleanDeal.DTOs.ProductOrderItemDTO>())
+                                    {
+                                        <tr>
+                                            <td>@item.ProductName</td>
+                                            <td>@item.Quantity</td>
+                                            <td class="text-end">
+                                                @((item.Price * item.Quantity).ToString("c", pl))
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card-footer text-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left-circle"></i> Powrót
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>

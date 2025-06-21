@@ -1,11 +1,158 @@
-﻿@{
+﻿@model IEnumerable<ServiceType>
+@{
     ViewData["Title"] = "Start";
+    Layout = "_Layout";
 }
-<div class="p-5 mb-4 bg-light rounded-3">
-    <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Witamy w Cleaning Service</h1>
-        <p class="fs-4">Zamów profesjonalne sprzątanie mieszkania lub biura online.</p>
-        <a asp-controller="Orders" asp-action="Create"
-           class="btn btn-success btn-lg">Złóż zamówienie &raquo;</a>
+
+
+<section id="hero" class="hero section dark-background">
+
+    <div id="hero-carousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <!-- Slide 1 -->
+        <div class="carousel-item active">
+            <img src="~/img/hero-carousel1.png"  alt="Sprzątanie mieszkania">
+            <div class="carousel-container">
+                <div>
+                    <h5>Kompleksowe porządki</h5>
+                    <h2><span>Domowe</span> sprzątanie</h2>
+                    <a asp-controller="Orders" asp-action="Create" class="btn-get-started">
+                        Zamów od 149&nbsp;zł
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 2 -->
+        <div class="carousel-item">
+            <img src="~/img/hero-carousel2.png" alt="Sprzątanie biura">
+            <div class="carousel-container">
+                <div>
+                    <h5>Biura • Coworki</h5>
+                    <h2><span>Profesjonalne</span> biuro</h2>
+                    <a asp-controller="Orders" asp-action="Create" class="btn-get-started">
+                        Wyceń usługę
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 3 -->
+        <div class="carousel-item">
+            <img src="~/img/hero-carousel3.png" alt="Okna i przeszklone powierzchnie">
+            <div class="carousel-container">
+                <div>
+                    <h5>Okna • Witryny</h5>
+                    <h2><span>Błysk</span> bez smug</h2>
+                    <a asp-controller="Orders" asp-action="Create" class="btn-get-started">
+                        Już od 15&nbsp;zł/okno
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <a class="carousel-control-prev" href="#hero-carousel" role="button" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bi bi-chevron-left"></span>
+        </a>
+        <a class="carousel-control-next" href="#hero-carousel" role="button" data-bs-slide="next">
+            <span class="carousel-control-next-icon bi bi-chevron-right"></span>
+        </a>
+
+        <ol class="carousel-indicators"></ol>
     </div>
-</div>
+
+</section>
+
+<!-- =====================  OUR SERVICES  ===================== -->
+<section id="services" class="services section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Nasze usługi</h2>
+        <p>Wybierz zakres, datę i zamów sprzątanie w kilka kliknięć – bez ukrytych kosztów.</p>
+    </div>
+
+    <div class="container">
+        <div class="row gy-4">
+            @foreach (var s in Model)
+            {
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="@((s.Id % 6 + 1) * 100)">
+                    <div class="service-item position-relative">
+                        <div class="icon">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <a asp-controller="Services" asp-action="Details" asp-route-id="@s.Id" class="stretched-link">
+                            <h3>@s.Name</h3>
+                        </a>
+                        <p>@s.Description</p>
+                        <p class="fw-bold text-primary mt-2">@s.BasePrice.ToString("c")</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- =====================  CTA  ===================== -->
+<section id="cta-book" class="section bg-light">
+    <div class="container" data-aos="zoom-in">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2>Zadbaj o czystość już dziś</h2>
+                <p class="mb-4">
+                    Rezerwacja trwa mniej niż minutę. Nasi zweryfikowani specjaliści zadbają o każdy detal
+                    – od podłogi po sufit.
+                </p>
+                <a asp-controller="Orders" asp-action="Create" class="btn btn-primary btn-lg">
+                    Rezerwuj termin
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =====================  TESTIMONIALS  ===================== -->
+<section id="testimonials" class="testimonials section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Opinie klientów</h2>
+        <p>Sprawdź, dlaczego 98&nbsp;% naszych klientów poleca CleanDeal znajomym.</p>
+    </div>
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="swiper init-swiper">
+            <script type="application/json" class="swiper-config">
+                {
+                  "loop": true,
+                  "speed": 600,
+                  "autoplay": { "delay": 6000 },
+                  "slidesPerView": "auto",
+                  "pagination": { "el": ".swiper-pagination", "type": "bullets", "clickable": true },
+                  "breakpoints": { "320": { "slidesPerView": 1, "spaceBetween": 40 }, "1200": { "slidesPerView": 3, "spaceBetween": 1 } }
+                }
+            </script>
+
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="testimonial-item">
+                        <div class="stars">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p>
+                            „Ekipa CleanDeal w dwie godziny doprowadziła moje mieszkanie po remoncie do perfekcji.
+                            Polecam każdemu!”
+                        </p>
+                        <div class="profile mt-auto">
+                            <img src="~/assets/img/testimonials/testimonials-1.jpg" class="testimonial-img" alt="">
+                            <h3>Anna, Warszawa</h3>
+                            <h4>Klientka indywidualna</h4>
+                        </div>
+                    </div>
+                </div>
+
+               
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    
+}

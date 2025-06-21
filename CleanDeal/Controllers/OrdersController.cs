@@ -10,17 +10,19 @@ using System.Security.Claims;
 
 namespace CleanDeal.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Client,Admin")]
     public class OrdersController: Controller
     {
         private readonly ICleaningOrderRepository _orderRepo;
         private readonly IServiceTypeRepository _serviceTypeRepo;
+        private readonly IApplicationUserRepository _userRepo;
         private readonly IMapper _mapper;
 
-        public OrdersController(ICleaningOrderRepository orderRepo, IServiceTypeRepository serviceTypeRepo, IMapper mapper)
+        public OrdersController(ICleaningOrderRepository orderRepo, IServiceTypeRepository serviceTypeRepo, IApplicationUserRepository userRepo, IMapper mapper)
         {
             _orderRepo = orderRepo;
             _serviceTypeRepo = serviceTypeRepo;
+            _userRepo = userRepo;
             _mapper = mapper;
         }
 
@@ -47,12 +49,16 @@ namespace CleanDeal.Controllers
             var model = new OrderCreateViewModel
             {
                 Date = System.DateTime.Today.AddDays(1), 
-                ServiceTypeOptions = serviceTypes.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
                 {
                     Value = st.Id.ToString(),
                     Text = st.Name
                 })
             };
+
+            ViewBag.ServicePrices = serviceTypes
+            .ToDictionary(st => st.Id, st => st.BasePrice);
+
             return View(model);
         }
 
@@ -63,16 +69,67 @@ namespace CleanDeal.Controllers
             if (!ModelState.IsValid)
             {
                 var serviceTypes = await _serviceTypeRepo.GetAllAsync();
-                model.ServiceTypeOptions = serviceTypes.Select(st => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                model.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
                 {
                     Value = st.Id.ToString(),
                     Text = st.Name
                 });
+
+                ViewBag.ServicePrices = serviceTypes
+                .ToDictionary(st => st.Id, st => st.BasePrice);
+
                 return View(model);
             }
 
             var newOrder = _mapper.Map<CleaningOrder>(model);
-            newOrder.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);  
+            newOrder.ServiceItems = model.ServiceTypeIds
+                .Select(id => new CleaningOrderService { ServiceTypeId = id })
+                .ToList();
+            if (model.ServiceTypeIds.Any())
+                newOrder.ServiceTypeId = model.ServiceTypeIds.First();
+            string userId;
+            if (User.IsInRole("Admin"))
+            {
+                if (string.IsNullOrWhiteSpace(model.UserEmail))
+                {
+                    ModelState.AddModelError("UserEmail", "Email klienta jest wymagany.");
+                    var serviceTypes = await _serviceTypeRepo.GetAllAsync();
+                    model.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
+                    {
+                        Value = st.Id.ToString(),
+                        Text = st.Name
+                    });
+
+                    ViewBag.ServicePrices = serviceTypes
+                    .ToDictionary(st => st.Id, st => st.BasePrice);
+
+                    return View(model);
+                }
+
+                var user = await _userRepo.FindByEmailAsync(model.UserEmail);
+                if (user == null)
+                {
+                    ModelState.AddModelError("UserEmail", "Nie znaleziono użytkownika o podanym email.");
+                    var serviceTypes = await _serviceTypeRepo.GetAllAsync();
+                    model.ServiceTypeOptions = serviceTypes.Select(st => new SelectListItem
+                    {
+                        Value = st.Id.ToString(),
+                        Text = st.Name
+                    });
+
+                    ViewBag.ServicePrices = serviceTypes
+                    .ToDictionary(st => st.Id, st => st.BasePrice);
+
+                    return View(model);
+                }
+                userId = user.Id;
+            }
+            else
+            {
+                userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            }
+            newOrder.UserId = userId;
+            newOrder.Status = OrderStatus.WaitingForCleaner;
             newOrder.IsCompleted = false;
 
             await _orderRepo.AddAsync(newOrder);
@@ -105,7 +162,7 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted)
+            if (order.Status == OrderStatus.Finished)
             {
                 TempData["Error"] = "Nie można edytować zakończonego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });
@@ -119,6 +176,9 @@ namespace CleanDeal.Controllers
                 Value = st.Id.ToString(),
                 Text = st.Name
             });
+
+            ViewBag.ServicePrices = serviceTypes
+            .ToDictionary(st => st.Id, st => st.BasePrice);
 
             return View(vm);      
         }
@@ -135,6 +195,10 @@ namespace CleanDeal.Controllers
                     Value = st.Id.ToString(),
                     Text = st.Name
                 });
+
+                ViewBag.ServicePrices = serviceTypes
+                .ToDictionary(st => st.Id, st => st.BasePrice);
+
                 return View(model);
             }
 
@@ -145,7 +209,7 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted)
+            if (order.Status == OrderStatus.Finished)
             {
                 TempData["Error"] = "Nie można edytować zakończonego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });
@@ -153,7 +217,13 @@ namespace CleanDeal.Controllers
 
             order.Date = model.Date;
             order.Address = model.Address;
-            order.ServiceTypeId = model.ServiceTypeId;
+            order.ServiceItems.Clear();
+            foreach (var sid in model.ServiceTypeIds)
+            {
+                order.ServiceItems.Add(new CleaningOrderService { ServiceTypeId = sid });
+            }
+            if (model.ServiceTypeIds.Any())
+                order.ServiceTypeId = model.ServiceTypeIds.First();
 
             await _orderRepo.UpdateAsync(order);
             TempData["Message"] = "Zamówienie zaktualizowano.";
@@ -170,14 +240,14 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted || order.Payment != null)
+            if (order.Status == OrderStatus.Finished || order.Payment != null)
             {
                 TempData["Error"] = "Nie można usunąć zakończonego lub opłaconego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });
             }
 
             var dto = _mapper.Map<CleaningOrderDTO>(order);
-            return View(dto);          // Views/Orders/Delete.cshtml – strona z pytaniem „czy na pewno?”
+            return View(dto);          // Views/Orders/Delete.cshtml 
         }
 
         [HttpPost, ActionName("Delete")]
@@ -191,7 +261,7 @@ namespace CleanDeal.Controllers
                 order.UserId != User.FindFirstValue(ClaimTypes.NameIdentifier))
                 return Forbid();
 
-            if (order.IsCompleted || order.Payment != null)
+            if (order.Status == OrderStatus.Finished || order.Payment != null)
             {
                 TempData["Error"] = "Nie można usunąć zakończonego lub opłaconego zlecenia.";
                 return RedirectToAction(nameof(Details), new { id });

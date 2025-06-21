@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 using CleanDeal.Data;
 using CleanDeal.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Stripe.Climate;
 
 namespace CleanDeal.Data
 {
@@ -28,6 +30,24 @@ namespace CleanDeal.Data
            
             const string adminEmail = "admin@cleaning.local";
             const string adminPass = "Admin123$";
+
+            const string cleanerEmail = "Cleaner@test.com";
+            const string cleanerPass = "Cleaner123$";
+
+            var cleaner = await userManager.FindByEmailAsync(cleanerEmail);
+            if(cleaner is null)
+            {
+                cleaner = new ApplicationUser
+                {
+                    UserName = cleanerEmail,
+                    Email = cleanerEmail,
+                    EmailConfirmed = true,
+                    FullName = "Cleaner Test"
+                };
+                var result = await userManager.CreateAsync(cleaner, cleanerPass);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(cleaner, "Cleaner");
+            }
 
             var admin = await userManager.FindByEmailAsync(adminEmail);
             if (admin is null)
@@ -59,18 +79,20 @@ namespace CleanDeal.Data
                 await context.SaveChangesAsync();
             }
 
-          /*  //-------------------------------------------------
-            // 4.  Produkty demo
-            //-------------------------------------------------
+            
             if (!await context.Products.AnyAsync())
             {
                 await context.Products.AddRangeAsync(
-                    new Product { Name = "Uniwersalny płyn", Price = 10, StockQuantity = 200 },
-                    new Product { Name = "Ściereczka mikrofibra", Price = 4, StockQuantity = 500 },
-                    new Product { Name = "Worki na śmieci 60 l", Price = 12, StockQuantity = 150 }
+                    new Models.Product { Name = "Uniwersalny płyn", Price = 10, StockQuantity = 200, Category = ProductCategory.Cleaner },
+                    new Models.Product { Name = "Ściereczka mikrofibra", Price = 4, StockQuantity = 500, Category = ProductCategory.Cleaner },
+                    new Models.Product { Name = "Worki na śmieci 60 l", Price = 12, StockQuantity = 150, Category = ProductCategory.Cleaner },
+                    
+                    new Models.Product { Name = "Aromatyczna świeca", Price = 25, StockQuantity = 100, Category = ProductCategory.Client },
+                    new Models.Product { Name = "Zestaw kadzidełek", Price = 15, StockQuantity = 80, Category = ProductCategory.Client },
+                    new Models.Product { Name = "Dekoracyjny wazon", Price = 40, StockQuantity = 50, Category = ProductCategory.Client }
                 );
                 await context.SaveChangesAsync();
-            }*/
+            }
 
             if (!await context.CleaningOrders.AnyAsync())
             {
@@ -84,6 +106,7 @@ namespace CleanDeal.Data
                 await userManager.CreateAsync(client, "Client123$");
                 await userManager.AddToRoleAsync(client, "Client");
 
+
                 var order = new CleaningOrder
                 {
                     UserId = client.Id,
@@ -92,8 +115,10 @@ namespace CleanDeal.Data
                                                  .Select(s => s.Id)
                                                  .FirstAsync(),
                     Address = "ul. Przykładowa 1, Kraków",
+                    Cleaner = await userManager.FindByEmailAsync(cleanerEmail),
                     Date = DateTime.Today.AddDays(2).AddHours(9),
-                    IsCompleted = false
+                    Status = OrderStatus.Finished,
+                    IsCompleted = true
                 };
                 context.CleaningOrders.Add(order);
                 await context.SaveChangesAsync();
@@ -102,17 +127,21 @@ namespace CleanDeal.Data
                 {
                     CleaningOrderId = order.Id,
                     Amount = 200,
-                    PaymentDate = DateTime.UtcNow
+                    PaymentDate = DateTime.UtcNow,
+                    ProductOrderId = null
                 };
                 context.Payments.Add(payment);
 
-                context.ChatMessages.Add(new ChatMessage
+                var chatMessage = new ChatMessage
                 {
                     CleaningOrderId = order.Id,
-                    UserId = client.Id,
-                    Content = "Proszę zwrócić uwagę na kuchnię.",
+                    Content = "Hello, your cleaner is on the way!",
+                    SenderId = admin.Id,         
+                    ReceiverId = client.Id,       
                     SentAt = DateTime.UtcNow
-                });
+                };
+
+                context.ChatMessages.Add(chatMessage);
 
                 await context.SaveChangesAsync();
             }

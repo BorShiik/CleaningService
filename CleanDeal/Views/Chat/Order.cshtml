@@ -1,51 +1,145 @@
-﻿@model IEnumerable<CleanDeal.DTOs.ChatMessageDTO>
+﻿@model CleanDeal.ViewModel.ChatPageViewModel
 @{
-    ViewData["Title"] = "Czat – zlecenie " + ViewBag.OrderId;
-    int orderId = ViewBag.OrderId;
+    ViewData["Title"] = "Czat – Twoje zamówienia";
 }
-<h2>Czat &mdash; zlecenie #@orderId (@ViewBag.ServiceName)</h2>
-
-<ul id="messagesList" class="list-group mb-3">
-    @foreach (var m in Model)
-    {
-        <li class="list-group-item">
-            <strong>@m.UserName:</strong> @m.Content
-            <small class="text-muted float-end">@m.SentAt.ToLocalTime().ToString("HH:mm")</small>
-        </li>
-    }
-</ul>
-
-<div class="input-group">
-    <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
-    <button id="sendBtn" class="btn btn-primary">Wyślij</button>
-</div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"
-            integrity="sha512-a0s4F9MGAHwwKgJ4uR8fRjPCbX2T3Bi9lABt8+7uQvZCbv97fdzSG4uY1oE+d90Vt/c9l5wBQVpfqHRFe4UTwg=="
-            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
-        const orderId = @orderId;
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chatHub")
-            .build();
+        const orderId = @Model.SelectedOrderId;
+        const currentUserId = '@ViewBag.CurrentUserId';
 
-        connection.on("ReceiveMessage", (user, msg, ordId) => {
-            if (ordId !== orderId) return;              
-            const li = document.createElement("li");
-            li.className = "list-group-item";
-            li.innerHTML = `<strong>${user}:</strong> ${msg}
-                <small class="text-muted float-end">${new Date().toLocaleTimeString()}</small>`;
-            document.getElementById("messagesList").appendChild(li);
-        });
+        const sendBtn = document.getElementById("sendBtn");
+        const messageInput = document.getElementById("messageInput");
+        const messagesList = document.getElementById("messagesList");
+        const receiverId = '@Model.ReceiverId';
 
-        connection.start();
+        function renderMessage(msg, currentUserId) {
+            const wrap  = document.createElement('div');
+            const mine  = msg.senderId === currentUserId;
 
-        document.getElementById("sendBtn").addEventListener("click", () => {
-            const txt = document.getElementById("messageInput");
-            if (!txt.value) return;
-            connection.invoke("SendMessage", "@User.Identity!.Name", txt.value, orderId);
-            txt.value = "";
-        });
+            wrap.className = `d-flex flex-column mb-2 ${mine ? 'align-items-end' : 'align-items-start'}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `px-3 py-2 rounded ${mine ? 'bg-primary text-white' : 'bg-light'}`;
+            bubble.textContent = msg.content;
+
+            const meta  = document.createElement('small');
+            meta.className = 'mt-1 d-flex gap-1';
+
+            const nameSpan = document.createElement('span');
+            const fullName =
+                msg.senderFullName    ??   
+                msg.senderName        ??   
+                msg.senderemail       ??  
+                msg.senderId;
+            const isAdmin = msg.IsAdmin;
+            nameSpan.textContent = fullName;
+            nameSpan.className = `fw-bold text-black ${isAdmin ? 'text-danger' : 'text-muted'}`;
+            bubble.className = `chat-bubble ${isAdmin ? 'admin' : (mine ? 'me' : 'you')}`;
+
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'text-muted';
+            if (msg.sentAt) {
+                timeSpan.textContent = new Date(msg.sentAt).toLocaleString('ru-RU', {
+                    day   : '2-digit',
+                    month : '2-digit',
+                    year  : 'numeric',
+                    hour  : '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            meta.appendChild(nameSpan);     
+            meta.appendChild(document.createTextNode(' • '));
+            meta.appendChild(timeSpan);      
+            wrap.appendChild(bubble);
+            wrap.appendChild(meta);
+
+            return wrap;
+        }
+
+
+
+        if (sendBtn && messageInput && messagesList && orderId) {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chatHub")
+                .build();
+
+            connection.on("ReceiveMessage", (msg) => {
+                const messageElement = renderMessage(msg, currentUserId);
+                messagesList.appendChild(messageElement);
+                messagesList.scrollTop = messagesList.scrollHeight;
+            });
+
+            connection.start().then(function () {
+                connection.invoke("JoinOrderGroup", orderId);
+                sendBtn.disabled = false;
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            sendBtn.addEventListener("click", function (event) {
+                event.preventDefault();
+                const text = messageInput.value;
+                if (!text) return;
+                connection.invoke("SendOrderMessage", orderId, text, receiverId || "")
+                    .catch(function (err) {
+                        return console.error(err.toString());
+                    });
+                messageInput.value = "";
+                messageInput.focus();
+            });
+
+            messageInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") sendBtn.click();
+            });
+        }
     </script>
 }
+
+
+<div class="row">
+    <div class="@(Model.SelectedOrderId==0 ? "col-12 col-md-6 col-lg-5 mx-auto" : "col-12 col-md-4")">
+        <ul class="list-group my-3">
+            @foreach (var o in Model.Orders)
+            {
+                <a asp-action="Order" asp-route-id="@o.Id"
+                   class="list-group-item list-group-item-action @(o.Id==Model.SelectedOrderId?"active":"")">
+                    <div class="fw-semibold">Zamówienie #@o.Id</div>
+                    <small>@o.ServiceType.Name (@o.Date.ToShortDateString())</small>
+                </a>
+            }
+        </ul>
+    </div>
+
+    @if (Model.SelectedOrderId != 0)
+    {
+        <div class="col-12 col-md-8 d-flex flex-column my-3">
+            <div class="card chat-card flex-grow-1">
+                <div id="messagesList" class="chat-messages">
+				@foreach (var m in Model.Messages)
+				{
+					var cls = m.SenderId == ViewBag.CurrentUserId 
+						? "me" 
+						: m.IsAdmin ? "admin" : "you";
+
+				    <div class="d-flex flex-column @(cls=="me"?"align-items-end":"align-items-start") mb-2">
+				        <div class="chat-bubble @cls">@m.Content</div>
+				        <div class="chat-meta">
+					        <span class="fw-bold text-black">@m.Sender.FullName</span>
+					        &nbsp;•&nbsp;
+					        @m.SentAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+				        </div>
+				    </div>
+				}
+				</div>
+                <div class="input-group">
+	                <input id="messageInput" class="form-control" placeholder="Wpisz wiadomość…" />
+	                <button id="sendBtn" class="btn btn-primary">Wyślij</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>

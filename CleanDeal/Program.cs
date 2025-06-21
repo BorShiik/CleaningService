@@ -1,13 +1,21 @@
 using CleanDeal.Data;
+using CleanDeal.Hubs;
 using CleanDeal.Repositories;
 using CleanDeal.Models;
+using CleanDeal.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+<<<<<<< HEAD
 using CleanDeal.Services.Email;
 using CleanDeal.Models.Email;
 using Microsoft.Extensions.Options;
 
 
+=======
+using Stripe;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
+>>>>>>> d381e8a438ae8347bc54da0119908f2cb47f0a28
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,8 +25,16 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
                                    optional: true)
                      .AddEnvironmentVariables();
 
+builder.Services.Configure<StripeSettings>(
+    builder.Configuration.GetSection("Stripe"));
+
+StripeConfiguration.ApiKey =
+    builder.Configuration["Stripe:SecretKey"];
+
 builder.Services.AddDbContext<CleanDeal.Data.ApplicationDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 {
@@ -32,19 +48,34 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-
+builder.Services.AddSession();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-//builder.Services.AddScoped<IProductRepository, ProductRepository>();
+var urls = builder.Configuration["ASPNETCORE_URLS"]?.Split(';').FirstOrDefault() ?? "http://localhost:5000";
+var port = new Uri(urls).Port;
+
+builder.Services.ConfigureApplicationCookie(o =>
+{
+    o.Cookie.Name = $".CleanDeal.Auth{port}";
+});
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(o =>
+{
+    o.Cookie.Name = $".CleanDeal.Session{port}";
+});
+
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ICleaningOrderRepository, CleaningOrderRepository>();
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 builder.Services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
+builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddSingleton<TemplateRenderer>();
@@ -82,7 +113,19 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+var pl = new CultureInfo("pl-PL");
+
+var options = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(pl),
+    SupportedCultures = new[] { pl },
+    SupportedUICultures = new[] { pl }
+};
+
+app.UseRequestLocalization(options);
+
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -93,6 +136,6 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 // SignalR Hub
-//app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

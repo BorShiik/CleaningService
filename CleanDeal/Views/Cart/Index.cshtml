@@ -1,0 +1,42 @@
+﻿@model IEnumerable<CleanDeal.ViewModel.CartItemViewModel>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
+@{
+    ViewData["Title"] = "Koszyk";
+    var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
+}
+<h2>Koszyk</h2>
+@if (!Model.Any())
+{
+    <p>Koszyk jest pusty.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produkt</th>
+                <th>Ilość</th>
+                <th>Cena</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Product.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@(item.Product.Price * item.Quantity)</td>
+                    <td>
+                        <form asp-action="Remove" method="post">
+                            <input type="hidden" name="id" value="@item.Product.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger">Usuń</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><strong>Razem:</strong> @ViewBag.Total.ToString("c")</p>
+    <a asp-action="Checkout" class="btn btn-success">Przejdź do płatności</a>
+}

@@ -15,10 +15,13 @@ namespace CleanDeal.ViewModel
         [Display(Name = "Adres")]
         public string Address { get; set; } = string.Empty;
 
-        [Display(Name = "Rodzaj usługi")]
-        [Range(1, int.MaxValue, ErrorMessage = "Wybierz usługę.")]
-        public int ServiceTypeId { get; set; }
+        [Display(Name = "Rodzaje usług")]
+        [Required(ErrorMessage = "Wybierz przynajmniej jedną usługę.")]
+        public List<int> ServiceTypeIds { get; set; } = new();
 
+        [EmailAddress]
+        [Display(Name = "Email klienta")]
+        public string? UserEmail { get; set; }
         public IEnumerable<SelectListItem>? ServiceTypeOptions { get; set; }
     }
 }

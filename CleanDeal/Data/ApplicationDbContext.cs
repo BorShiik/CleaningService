@@ -15,6 +15,10 @@ namespace CleanDeal.Data
         public DbSet<Payment> Payments => Set<Payment>();
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
         public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<ProductOrder> ProductOrders => Set<ProductOrder>();
+        public DbSet<ProductOrderItem> ProductOrderItems => Set<ProductOrderItem>();
+        public DbSet<CleaningOrderService> CleaningOrderServices => Set<CleaningOrderService>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -22,6 +26,17 @@ namespace CleanDeal.Data
 
             b.Entity<Payment>().Property(p => p.Amount).HasPrecision(18, 2);
             b.Entity<ServiceType>().Property(s => s.BasePrice).HasPrecision(18, 2);
+            b.Entity<Product>().Property(p => p.Price).HasPrecision(18, 2);
+
+            b.Entity<CleaningOrder>()
+                .Property(o => o.Status)
+                .HasConversion<string>();
+
+            b.Entity<CleaningOrder>()
+               .HasOne(o => o.Cleaner)
+               .WithMany(u => u.CleanerOrders)
+               .HasForeignKey(o => o.CleanerId)
+               .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<CleaningOrder>()
                .HasOne(o => o.Payment)
@@ -29,11 +44,56 @@ namespace CleanDeal.Data
                .HasForeignKey<Payment>(p => p.CleaningOrderId)
                .OnDelete(DeleteBehavior.Cascade);
 
-            b.Entity<ChatMessage>()
-               .HasOne(m => m.CleaningOrder)
-               .WithMany(o => o.ChatMessages)
-               .HasForeignKey(m => m.CleaningOrderId)
+            b.Entity<CleaningOrder>()
+               .HasOne(o => o.ServiceType)
+               .WithMany()
+               .HasForeignKey(o => o.ServiceTypeId)
                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<ProductOrder>()
+               .HasOne(o => o.User)
+               .WithMany(u => u.ProductOrders)
+               .HasForeignKey(o => o.UserId);
+
+            b.Entity<ProductOrder>()
+                .HasOne(o => o.Payment)
+                .WithOne(p => p.ProductOrder)
+                .HasForeignKey<Payment>(p => p.ProductOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<ProductOrderItem>()
+                .HasOne(i => i.Product)
+                .WithMany()
+                .HasForeignKey(i => i.ProductId);
+
+            b.Entity<ProductOrderItem>()
+                .HasOne(i => i.ProductOrder)
+                .WithMany(o => o.Items)
+                .HasForeignKey(i => i.ProductOrderId);
+
+            b.Entity<ChatMessage>()
+                .HasOne(m => m.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<ChatMessage>()
+                .HasOne(m => m.Receiver)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(m => m.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<CleaningOrderService>()
+                 .HasOne(os => os.CleaningOrder)
+                 .WithMany(o => o.ServiceItems)
+                 .HasForeignKey(os => os.CleaningOrderId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+            b.Entity<CleaningOrderService>()
+                .HasOne(os => os.ServiceType)
+                .WithMany()
+                .HasForeignKey(os => os.ServiceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             b.Entity<Review>()
                .HasOne(r => r.CleaningOrder)

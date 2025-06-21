@@ -1,65 +1,130 @@
 ﻿@model IEnumerable<CleanDeal.DTOs.CleaningOrderDTO>
+
 @{
     ViewData["Title"] = "Moje zlecenia";
     bool isAdmin = User.IsInRole("Admin");
+    bool isClient = User.IsInRole("Client");
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-<h2>@ViewData["Title"]</h2>
 
-<p>
-    <a asp-action="Create" class="btn btn-success">Nowe zamówienie</a>
-</p>
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-journal-text me-2"></i>@ViewData["Title"]
+        </h1>
+    </div>
+</section>
 
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Data</th>
-            <th>Usługa</th>
-            <th>Status</th>
-            <th>Kwota</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var o in Model)
-        {
-            <tr>
-                <td>@o.Id</td>
-                <td>@o.Date.ToString("g")</td>
-                <td>@o.ServiceTypeName</td>
-                <td>
-                    @(o.IsCompleted ? "Zakończone" : "W toku")
-                    @if (o.IsCompleted)
-                    {
-                        <span class="badge bg-success ms-1">Opłacone</span>
-                    }
-                </td>
-                <td>
-                    @(o.PaymentAmount.HasValue ? o.PaymentAmount.Value.ToString("c") : "—")
-                    </td>
-                <td class="px-4">
-                    <div class="btn-group ms-xxl-5 float-end" role="group">
-                        <a asp-action="Details" asp-route-id="@o.Id" class="btn btn-outline-primary">Szczegóły</a>
-                        @if (!o.IsCompleted)
-                        {
-                            <a asp-action="Edit" asp-route-id="@o.Id" class="btn btn-outline-primary"> Edytuj </a>
-                        }
-                        @if (!o.IsCompleted)
-                        {
-                            <a asp-controller="Payments" asp-action="Checkout"
-                               asp-route-id="@o.Id" class="btn btn-success"> Zapłać </a>
-                        }
-                        @if (isAdmin || (!o.IsCompleted && o.IsCompleted))
-                        {
-                            <a asp-action="Delete" asp-route-id="@o.Id" method="post"
-                                  class="btn btn-danger"
-                                  onsubmit="return confirm('Usunąć?');">
-                                Usuń
-                            </a>
-                        }
-                        </div>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<section class="section">
+    <div class="container" data-aos="fade-up">
+
+        <div class="d-flex justify-content-end mb-3">
+            <a asp-action="Create" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i>Nowe zamówienie
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Data</th>
+                                <th scope="col">Usługa</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Kwota</th>
+                                <th scope="col" class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model)
+                            {
+                                <tr>
+                                    <td>@o.Id</td>
+                                    <td>@o.Date.ToString("g", pl)</td>
+
+                                    <td>
+                                        @foreach (var s in (o.ServiceNames ?? "")
+                                                        .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-primary me-1">@s.Trim()</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @(o.Status switch
+                                          {
+                                              "Ukończone" => "Ukończone",
+                                              "Oczekuje"  => "Oczekuje",
+                                              _           => "W toku"
+                                          })
+                                        @if (o.IsPaid)
+                                        {
+                                            <span class="badge bg-success ms-1">Opłacone</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger ms-1">Nieopłacone</span>
+                                        }
+                                    </td>
+                                    <td>@(o.TotalPrice?.ToString("c", pl) ?? "-")</td>
+
+                                    <td class="text-end">
+                                        <div class="btn-group" role="group">
+                                            @if (isAdmin)
+                                            {
+                                                <a class="btn btn-primary"
+                                                   asp-controller="Chat"
+                                                   asp-action="Order"
+                                                   asp-route-id="@o.Id">
+                                                    <i class="bi bi-chat-dots"></i>
+                                                </a>
+                                            }
+
+                                            <a asp-action="Details"
+                                               asp-route-id="@o.Id"
+                                               class="btn btn-outline-primary">
+                                                <i class="bi bi-search"></i>
+                                            </a>
+
+                                            @if (o.Status != "Ukończone")
+                                            {
+                                                <a asp-action="Edit"
+                                                   asp-route-id="@o.Id"
+                                                   class="btn btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            }
+
+                                            @if (!o.IsPaid && isClient)
+                                            {
+                                                <a asp-controller="Payments"
+                                                   asp-action="Checkout"
+                                                   asp-route-id="@o.Id"
+                                                   class="btn btn-success">
+                                                    <i class="bi bi-credit-card"></i>
+                                                </a>
+                                            }
+
+                                            @if (isAdmin && !o.IsPaid)
+                                            {
+                                                <a asp-action="Delete"
+                                                   asp-route-id="@o.Id"
+                                                   class="btn btn-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>

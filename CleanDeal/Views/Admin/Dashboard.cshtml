@@ -1,0 +1,169 @@
+﻿@model CleanDeal.ViewModel.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Panel administratora";
+    Layout = "_Layout";
+}
+
+
+<section class="section dark-background py-5">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">Panel administratora</h1>
+        <h5 class="opacity-75">Podsumowanie kluczowych statystyk platformy CleanDeal</h5>
+    </div>
+</section>
+
+
+<section id="stats" class="section">
+    <div class="container">
+        <div class="row gy-4" data-aos="fade-up">
+
+            <!-- Zamówienia -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-receipt"></i></div>
+                        <h5 class="card-title mb-1">Zamówienia</h5>
+                        <p class="display-6 fw-semibold mb-0">@Model.TotalOrders</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Użytkownicy -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-people"></i></div>
+                        <h5 class="card-title mb-1">Użytkownicy</h5>
+                        <p class="display-6 fw-semibold mb-0">@Model.TotalUsers</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Produkty -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-box-seam"></i></div>
+                        <h5 class="card-title mb-1">Produkty</h5>
+                        <p class="display-6 fw-semibold mb-0">@Model.TotalProducts</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Przychód -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body py-4">
+                        <div class="icon text-primary fs-1 mb-2"><i class="bi bi-cash-coin"></i></div>
+                        <h5 class="card-title mb-1">Przychód</h5>
+                        <p class="display-6 fw-semibold mb-0">
+                            @Model.TotalRevenue.ToString("c")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<section id="ratings" class="section bg-light">
+    <div class="container" data-aos="fade-up">
+        <h3 class="mb-3 fw-bold">Średnia ocena zamówień</h3>
+        <p class="fs-2 fw-bold text-primary">
+            @Model.AverageOrderRating.ToString("0.0") / 5
+        </p>
+
+        @if (Model.CleanerRatings.Any())
+        {
+            <h4 class="mt-4">Oceny pracowników</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Pracownik</th>
+                            <th class="text-center">Średnia ocena</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.CleanerRatings)
+                        {
+                            <tr>
+                                <td>@c.CleanerName</td>
+                                <td class="text-center">@c.AverageRating.ToString("0.0") / 5</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+
+
+<section id="recent-orders" class="section">
+    <div class="container" data-aos="fade-up">
+        <h3 class="mb-3">Najnowsze zlecenia</h3>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Użytkownik</th>
+                        <th>Usługa</th>
+                        <th>Status</th>
+                        <th class="text-center">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                    @await Html.PartialAsync("OrderRows", Model.RecentOrders)
+            </table>
+            <div class="text-center mt-3">
+                <button id="load-more-btn" class="btn btn-outline-primary" data-skip="@Model.RecentOrders.Count" data-total="@Model.TotalOrders">Pokaż więcej</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        #stats .card {
+            border: none;
+            border-radius: 1rem;
+        }
+
+        #stats .icon i {
+            line-height: 1;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        const btn = document.getElementById('load-more-btn');
+        const tbody = document.getElementById('orders-table-body');
+        if (btn) {
+            btn.addEventListener('click', async () => {
+                let skip = parseInt(btn.getAttribute('data-skip'));
+                const total = parseInt(btn.getAttribute('data-total'));
+                const resp = await fetch(`/Admin/LoadOrders?skip=${skip}`);
+                if (resp.ok) {
+                    const html = await resp.text();
+                    if (html.trim() === '') {
+                        btn.style.display = 'none';
+                        return;
+                    }
+                    tbody.insertAdjacentHTML('beforeend', html);
+                    skip += 5;
+                    btn.setAttribute('data-skip', skip);
+                    if (skip >= total) {
+                        btn.style.display = 'none';
+                    }
+                }
+            });
+        }
+    </script>
+}

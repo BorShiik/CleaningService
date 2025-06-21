@@ -1,0 +1,58 @@
+﻿@model CleanDeal.ViewModel.ProductOrderCreateViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
+@{
+    ViewData["Title"] = "Dane dostawy";
+    var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
+    var items = ViewBag.Items as IEnumerable<CleanDeal.ViewModel.CartItemViewModel>;
+}
+<h2>Dane dostawy</h2>
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="Address" class="form-label"></label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DeliveryMethod" class="form-label"></label>
+        <select asp-for="DeliveryMethod" class="form-select">
+            <option value="Courier">Kurier</option>
+            <option value="PickupPoint">Punkt odbioru</option>
+        </select>
+        <span asp-validation-for="DeliveryMethod" class="text-danger"></span>
+    </div>
+    <h4>Produkty</h4>
+    <table class="table">
+        <thead>
+            <tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Product.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@(item.Product.Price * item.Quantity)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p><strong>Razem:</strong> @ViewBag.Total.ToString("c")</p>
+    <button type="submit" class="btn btn-success">Zapłać</button>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        document.querySelector('form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const resp = await fetch('', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': '@csrf' },
+                body: new FormData(e.target)
+            });
+            const { id, key } = await resp.json();
+            const stripe = Stripe(key);
+            await stripe.redirectToCheckout({ sessionId: id });
+        });
+    </script>
+}

@@ -1,0 +1,96 @@
+﻿@{
+    ViewData["Title"] = "Panel sprzątacza";
+    Layout = "_Layout";
+}
+
+
+<section id="hero-cleaner" class="hero section dark-background">
+
+    <div class="container text-center" data-aos="zoom-in">
+        <h1 class="display-4 fw-bold text-white mb-3">
+            Zostań bohaterem czystości z <span class="text-primary">CleanDeal</span>
+        </h1>
+        <p class="lead text-white-50 mb-4">
+            Wybieraj zlecenia, pracuj kiedy chcesz i zarabiaj nawet<br />
+            <strong>35 zł/h</strong> dzięki elastycznemu grafikowi.
+        </p>
+        <a asp-controller="CleanerOrders" asp-action="Available" class="btn btn-primary btn-lg">
+            Przeglądaj wolne zlecenia
+        </a>
+    </div>
+</section>
+
+
+<section id="benefits" class="services section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Dlaczego warto z nami sprzątać?</h2>
+        <p>Dołącz do setek sprzątaczy, którzy już korzystają z elastycznych grafików i atrakcyjnych premii.</p>
+    </div>
+
+    <div class="container">
+        <div class="row gy-4">
+
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-item position-relative text-center">
+                    <div class="icon"><i class="bi bi-cash-coin"></i></div>
+                    <h3>Natychmiastowe wypłaty</h3>
+                    <p>Środki za ukończone zlecenia trafiają na Twoje konto już następnego dnia roboczego.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-item position-relative text-center">
+                    <div class="icon"><i class="bi bi-calendar-check"></i></div>
+                    <h3>Elastyczny grafik</h3>
+                    <p>Sami decydujecie, kiedy i ile sprzątacie – akceptujecie tylko pasujące terminy.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-item position-relative text-center">
+                    <div class="icon"><i class="bi bi-shield-check"></i></div>
+                    <h3>Ubezpieczenie OC</h3>
+                    <p>Każde zlecenie jest objęte polisą – możesz pracować bez obaw o nieprzewidziane szkody.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section id="loyalty" class="section bg-light">
+    <div class="container" data-aos="fade-left">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <img src="~/assets/img/loyalty/loyalty-badge.svg" class="img-fluid" alt="Program lojalnościowy">
+            </div>
+            <div class="col-lg-6">
+                <h2>Program „Zaufany Sprzątacz”</h2>
+                <ul class="list-unstyled lead">
+                    <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i>Każde <strong>10 ukończonych</strong> zleceń = bonus 150 zł</li>
+                    <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i>Ocena ≥ 4,8 ★ = priorytet przy przydziale zleceń</li>
+                    <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i>Darmowe środki czystości co miesiąc dla najlepszych 5 %</li>
+                    <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i>Specjalna odznaka w profilu – więcej napiwków!</li>
+                </ul>
+                <a asp-controller="CleanerOrders" asp-action="My" class="btn btn-outline-primary btn-lg mt-2">
+                    Sprawdź mój postęp
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section id="cta-join" class="cta-section section">
+    <div class="container text-center" data-aos="zoom-in">
+        <h2>Zacznij zarabiać z CleanDeal</h2>
+        <p class="mb-4">Wypełnij krótką ankietę, a nasz zespół weryfikacyjny skontaktuje się z Tobą w ciągu 24 godzin.</p>
+        <a asp-controller="Account" asp-action="RegisterCleaner" class="btn btn-primary btn-lg">
+            Dołącz do zespołu
+        </a>
+    </div>
+</section>
+
+@section Scripts {
+  
+}

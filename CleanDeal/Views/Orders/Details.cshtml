@@ -1,51 +1,126 @@
 ﻿@model CleanDeal.DTOs.CleaningOrderDTO
 @{
     ViewData["Title"] = $"Zlecenie #{Model.Id}";
-    bool isAdmin = User.IsInRole("Admin");
+    var isAdmin = User.IsInRole("Admin");
+    var isClient = User.IsInRole("Client");
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-<h2>Zamówienie #@Model.Id</h2>
 
-<dl class="row">
-    <dt class="col-sm-3">Data</dt>
-    <dd class="col-sm-9">@Model.Date.ToString("f")</dd>
+<section class="section dark-background py-5">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">Zamówienie #@Model.Id</h1>
+        <p class="opacity-75">Szczegóły sprzątania i płatności</p>
+    </div>
+</section>
 
-    <dt class="col-sm-3">Adres</dt>
-    <dd class="col-sm-9">@Model.Address</dd>
+<section class="section">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
 
-    <dt class="col-sm-3">Usługa</dt>
-    <dd class="col-sm-9">@Model.ServiceTypeName</dd>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
 
-    <dt class="col-sm-3">Status</dt>
-    <dd class="col-sm-9">
-        @(Model.IsCompleted ? "Zakończone" : "W toku")
-        @if (Model.IsPaid)
-        {
-            <span class="badge bg-success ms-1">Opłacone</span>
-        }
-    </dd>
+                        <h5 class="mb-3 text-primary">Podsumowanie</h5>
 
-    <dt class="col-sm-3">Kwota</dt>
-    <dd class="col-sm-9">
-        @(Model.PaymentAmount?.ToString("c") ?? "—")
-    </dd>
-    <dt class="col-sm-3">Ocena klienta</dt>
-    <dd class="col-sm-9">
-        @(Model.HasReview ? $"{Model.ReviewRating} / 5" : "brak")
-    </dd>
-</dl>
+                        <dl class="row">
+                            <dt class="col-sm-4">Data zlecenia</dt>
+                            <dd class="col-sm-8">@Model.Date.ToString("f", pl)</dd>
 
-@if (!Model.IsCompleted)
-{
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+                            @if (isAdmin)
+                            {
+                                <dt class="col-sm-4">Klient</dt>
+                                <dd class="col-sm-8">@Model.UserEmail</dd>
+                            }
+                            @if (isAdmin || isClient)
+                            {
+                                <dt class="col-sm-4">Sprzątacz</dt>
+                                <dd class="col-sm-8">@((Model.Cleaner?.FullName) ?? "-")</dd>
+                            }
+
+                            <dt class="col-sm-4">Adres sprzątania</dt>
+                            <dd class="col-sm-8">@Model.Address</dd>
+
+                            <dt class="col-sm-4">Rodzaje usług</dt>
+                            <dd class="col-sm-8">
+                                @foreach (var s in (Model.ServiceNames ?? "")
+                                                  .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <span class="badge bg-primary me-1">@s.Trim()</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Status</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-@GetStatusColor(Model.Status)">
+                                    @Model.Status
+                                </span>
+
+                                @if (Model.IsPaid)
+                                {
+                                    <span class="badge bg-success ms-1">Opłacone</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger ms-1">Nieopłacone</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Kwota</dt>
+                            <dd class="col-sm-8 fw-semibold">
+                                @Model.TotalPrice?.ToString("c", pl) 
+                            </dd>
+
+                            <dt class="col-sm-4">Ocena klienta</dt>
+                            <dd class="col-sm-8">
+                                @(Model.HasReview ? $"{Model.ReviewRating} / 5" : "Brak")
+                            </dd>
+                        </dl>
+
+                        <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                            @if (Model.Status != "Ukończone")
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id"
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil-square me-1"></i>Edytuj
+                                </a>
+                            }
+                            @if (!Model.IsPaid)
+                            {
+                                <a asp-controller="Payments" asp-action="Checkout"
+                                   asp-route-id="@Model.Id" class="btn btn-success">
+                                    <i class="bi bi-credit-card me-1"></i>Zapłać
+                                </a>
+                            }
+                            @if (!Model.HasReview && Model.Status == "Ukończone")
+                            {
+                                <a asp-controller="Review" asp-action="Create"
+                                   asp-route-orderId="@Model.Id" class="btn btn-warning">
+                                    <i class="bi bi-star me-1"></i>Oceń usługę
+                                </a>
+                            }
+                            <a asp-controller="Chat" asp-action="Order"
+                               asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="bi bi-chat-dots me-1"></i>Czat
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary ms-auto">
+                                Powrót
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    private static string GetStatusColor(string status) => status switch
+    {
+        "Ukończone" => "success",
+        "Oczekuje" => "warning",
+        _ => "primary"
+    };
 }
-@if (!Model.IsPaid)
-{
-    <a asp-controller="Payments" asp-action="Checkout"
-       asp-route-id="@Model.Id" class="btn btn-success ms-2">Zapłać</a>
-}
-@if (!Model.HasReview && Model.IsCompleted)
-{
-    <a asp-controller="Review" asp-action="Create"
-       asp-route-orderId="@Model.Id" class="btn btn-warning ms-2">Oceń usługę</a>
-}
-<a asp-action="Index" class="btn btn-secondary ms-2">Powrót</a>

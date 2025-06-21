@@ -1,4 +1,5 @@
 ﻿using CleanDeal.Data;
+using CleanDeal.DTOs;
 using CleanDeal.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +55,28 @@ namespace CleanDeal.Repositories
                 _context.Reviews.Remove(review);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<double> GetAverageRatingAsync()
+        {
+            if (!await _context.Reviews.AnyAsync()) return 0;
+            return await _context.Reviews.AverageAsync(r => r.Rating);
+        }
+
+        public async Task<IEnumerable<CleanerRatingDTO>> GetAverageRatingByCleanerAsync()
+        {
+            return await _context.Reviews
+                .Include(r => r.CleaningOrder)
+                .ThenInclude(o => o.Cleaner)
+                .Where(r => r.CleaningOrder.CleanerId != null)
+                .GroupBy(r => new { r.CleaningOrder.CleanerId, r.CleaningOrder.Cleaner!.FullName })
+                .Select(g => new CleanerRatingDTO
+                {
+                    CleanerId = g.Key.CleanerId!,
+                    CleanerName = g.Key.FullName,
+                    AverageRating = g.Average(r => r.Rating)
+                })
+                .ToListAsync();
         }
     }
 }

@@ -1,0 +1,27 @@
+﻿@model IEnumerable<CleanDeal.DTOs.CleanerMyOrderDTO>
+@{
+    ViewData["Title"] = "Moje zlecenia";
+}
+<h2>@ViewData["Title"]</h2>
+<table class="table table-striped">
+    <thead><tr><th>Data</th><th>Adres</th><th>Usługa</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.Date:g</td>
+                <td>@o.Address</td>
+                <td>@o.ServiceNames</td>
+                <td>@o.Status</td>
+                <td>
+                    @if (o.CanComplete)
+                    {
+                        <form asp-action="Complete" asp-route-id="@o.Id" method="post" class="d-inline">
+                            <button class="btn btn-warning btn-sm">Zakończ</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
