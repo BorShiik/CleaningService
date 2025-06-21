@@ -42,9 +42,18 @@
                         <tr>
                             <td>@p.Name</td>
                             <td>@p.Price.ToString("c", pl)</td>
-                            <td>@p.StockQuantity</td>
+                            <td>
+                                @if (p.StockQuantity > 0)
+                                {
+                                    @p.StockQuantity
+                                }
+                                else
+                                {
+                                    <span class="text-danger">товар распродан</span>
+                                }
+                            </td>
 
-                            
+
                             <td class="text-center">
                                 @if (isAdmin)
                                 {
@@ -59,16 +68,23 @@
                                 }
                                 else
                                 {
-                                    <form asp-controller="Cart" asp-action="Add" method="post"
-                                          class="d-inline-flex align-items-center">
-                                        <input type="hidden" name="id" value="@p.Id" />
-                                        <input type="number" name="qty" value="1" min="1"
-                                               class="form-control form-control-sm me-2"
-                                               style="width:80px;" />
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="bi bi-cart-plus me-1"></i>Dodaj
-                                        </button>
-                                    </form>
+                                    if (p.StockQuantity > 0)
+                                    {
+                                        <form asp-controller="Cart" asp-action="Add" method="post"
+                                              class="d-inline-flex align-items-center">
+                                            <input type="hidden" name="id" value="@p.Id" />
+                                            <input type="number" name="qty" value="1" min="1"
+                                                   class="form-control form-control-sm me-2"
+                                                   style="width:80px;" />
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="bi bi-cart-plus me-1"></i>Dodaj
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger">Недоступен</span>
+                                    }
                                 }
                             </td>
                         </tr>

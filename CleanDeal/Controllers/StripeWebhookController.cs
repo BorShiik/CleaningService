@@ -14,17 +14,20 @@ namespace CleanDeal.Controllers
         private readonly IPaymentRepository _payRepo;
         private readonly ICleaningOrderRepository _cleanRepo;
         private readonly IProductOrderRepository _prodRepo;
+        private readonly IProductRepository _productRepo;
 
         public StripeWebhookController(
             IConfiguration cfg,
             IPaymentRepository payRepo,
             ICleaningOrderRepository cleanRepo,
-            IProductOrderRepository prodRepo)
+            IProductOrderRepository prodRepo,
+            IProductRepository productRepo)
         {
             _cfg = cfg;
             _payRepo = payRepo;
             _cleanRepo = cleanRepo;
             _prodRepo = prodRepo;
+            _productRepo = productRepo;
         }
 
         [HttpPost]
@@ -70,6 +73,19 @@ namespace CleanDeal.Controllers
                     return BadRequest("Product order not found");
 
                 await _payRepo.AddAsync(payment);
+
+
+                if (orderType == "product")
+                {
+                    var order = await _prodRepo.GetByIdAsync(orderId);
+                    if (order != null)
+                    {
+                        foreach (var item in order.Items)
+                        {
+                            await _productRepo.DecreaseStockAsync(item.ProductId, item.Quantity);
+                        }
+                    }
+                }
             }
 
             return Ok();

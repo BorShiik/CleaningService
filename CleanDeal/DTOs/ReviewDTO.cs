@@ -6,5 +6,6 @@
         public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; }
         public int CleaningOrderId { get; set; }
+        public string? UserFullName { get; set; }
     }
 }

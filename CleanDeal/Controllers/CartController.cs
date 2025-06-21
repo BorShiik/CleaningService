@@ -52,10 +52,25 @@ namespace CleanDeal.Controllers
       
 
         [HttpPost]
-        public IActionResult Add(int id, int qty = 1)
+        public async Task<IActionResult> Add(int id, int qty = 1)
         {
+            var product = await _productRepo.GetByIdAsync(id);
+            if (product == null || product.StockQuantity <= 0)
+            {
+                TempData["Error"] = "Produkt niedostępny.";
+                return RedirectToAction("Index", "Products");
+            }
+
             var cart = GetCart();
-            cart[id] = cart.TryGetValue(id, out var q) ? q + qty : qty;
+            var current = cart.TryGetValue(id, out var q) ? q : 0;
+            if (current + qty > product.StockQuantity)
+            {
+                TempData["Error"] = "Brak wystarczającej ilości produktu w magazynie.";
+                qty = product.StockQuantity - current;
+                if (qty <= 0) return RedirectToAction("Index", "Products");
+            }
+
+            cart[id] = current + qty;
             SaveCart(cart);
             return RedirectToAction("Index", "Products");
         }
@@ -111,7 +126,17 @@ namespace CleanDeal.Controllers
                 return View(model);
             }
 
-            
+            foreach (var (productId, qty) in cart)
+            {
+                var product = await _productRepo.GetByIdAsync(productId);
+                if (product == null || product.StockQuantity < qty)
+                {
+                    ModelState.AddModelError(string.Empty, $"Produkt {product?.Name ?? productId.ToString()} ma tylko {product?.StockQuantity ?? 0} sztuk.");
+                    await RepopulateViewBagAsync(cart);
+                    return View(model);
+                }
+            }
+
             var order = new ProductOrder
             {
                 OrderDate = DateTime.UtcNow,
@@ -151,6 +176,11 @@ namespace CleanDeal.Controllers
                     PaymentDate = DateTime.UtcNow,
                     ProductOrderId = order.Id
                 });
+
+                foreach (var item in order.Items)
+                {
+                    await _productRepo.DecreaseStockAsync(item.ProductId, item.Quantity);
+                }
             }
 
             TempData["Message"] = "Płatność zakończona pomyślnie.";

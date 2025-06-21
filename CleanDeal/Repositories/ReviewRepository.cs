@@ -35,6 +35,16 @@ namespace CleanDeal.Repositories
                           .ToListAsync();
         }
 
+        public async Task<IEnumerable<Review>> GetRecentAsync(int count)
+        {
+            return await _context.Reviews
+                          .Include(r => r.CleaningOrder)
+                          .ThenInclude(o => o.User)
+                          .OrderByDescending(r => r.CreatedAt)
+                          .Take(count)
+                          .ToListAsync();
+        }
+
         public async Task AddAsync(Review review)
         {
             _context.Reviews.Add(review);

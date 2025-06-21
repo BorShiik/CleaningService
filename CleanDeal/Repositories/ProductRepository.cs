@@ -52,5 +52,15 @@ namespace CleanDeal.Repositories
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
         }
+
+        public async Task DecreaseStockAsync(int productId, int quantity)
+        {
+            var product = await _context.Products.FindAsync(productId);
+            if (product != null)
+            {
+                product.StockQuantity = Math.Max(0, product.StockQuantity - quantity);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

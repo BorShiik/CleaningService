@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ServiceType>
+﻿@model CleanDeal.ViewModel.HomeIndexViewModel
 @{
     ViewData["Title"] = "Start";
     Layout = "_Layout";
@@ -10,7 +10,7 @@
     <div id="hero-carousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
         <!-- Slide 1 -->
         <div class="carousel-item active">
-            <img src="~/img/hero-carousel1.png"  alt="Sprzątanie mieszkania">
+            <img src="~/img/hero-carousel1.png" alt="Sprzątanie mieszkania">
             <div class="carousel-container">
                 <div>
                     <h5>Kompleksowe porządki</h5>
@@ -69,7 +69,7 @@
 
     <div class="container">
         <div class="row gy-4">
-            @foreach (var s in Model)
+            @foreach (var s in Model.Services)
             {
                 <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="@((s.Id % 6 + 1) * 100)">
                     <div class="service-item position-relative">
@@ -127,32 +127,33 @@
             </script>
 
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="testimonial-item">
-                        <div class="stars">
-                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                        <p>
-                            „Ekipa CleanDeal w dwie godziny doprowadziła moje mieszkanie po remoncie do perfekcji.
-                            Polecam każdemu!”
-                        </p>
-                        <div class="profile mt-auto">
-                            <img src="~/assets/img/testimonials/testimonials-1.jpg" class="testimonial-img" alt="">
-                            <h3>Anna, Warszawa</h3>
-                            <h4>Klientka indywidualna</h4>
+                @foreach (var r in Model.Reviews)
+                {
+                    <div class="swiper-slide">
+                        <div class="testimonial-item">
+                            <div class="stars">
+                                @for (var i = 0; i < r.Rating; i++)
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }
+                            </div>
+                            <p>
+                                @r.Comment
+                            </p>
+                            <div class="profile mt-auto">
+                                <h3>@r.UserFullName</h3>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-               
+                }
             </div>
             <div class="swiper-pagination"></div>
         </div>
     </div>
 </section>
 
+
 @section Scripts {
-    
+
+
 }
