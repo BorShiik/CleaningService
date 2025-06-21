@@ -1,4 +1,4 @@
-/**
+﻿/**
 * Template Name: EstateAgency
 * Template URL: https://bootstrapmade.com/real-estate-agency-bootstrap-template/
 * Updated: Aug 09 2024 with Bootstrap v5.3.3
@@ -806,54 +806,100 @@ section,
 /*--------------------------------------------------------------
 # Services Section
 --------------------------------------------------------------*/
+
+/* ===== SERVICES CARDS ====================================== */
 .services .service-item {
-  background-color: var(--surface-color);
-  box-shadow: 0px 5px 90px 0px rgba(0, 0, 0, 0.1);
-  padding: 60px 30px;
-  transition: all ease-in-out 0.3s;
-  border-radius: 18px;
-  border-bottom: 5px solid var(--surface-color);
-  height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 100%;
+    height: 320px; 
+    padding: 2rem;
+    border-radius: 18px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 0 5px 60px rgba(0,0,0,.10);
+    transition: transform .25s ease, box-shadow .25s ease;
+    overflow: hidden;
 }
 
-.services .service-item .icon {
-  color: var(--contrast-color);
-  background: var(--accent-color);
-  margin: 0;
-  width: 64px;
-  height: 64px;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  font-size: 28px;
-  transition: ease-in-out 0.3s;
+@media (min-width:992px) { 
+    .services .service-item {
+        height: 280px;
+    }
 }
 
-.services .service-item h3 {
-  font-weight: 700;
-  margin: 10px 0 15px 0;
-  font-size: 22px;
-  transition: ease-in-out 0.3s;
+
+.services .service-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    transition: background .25s ease;
 }
 
-.services .service-item p {
-  line-height: 24px;
-  font-size: 14px;
-  margin-bottom: 0;
+
+.services .service-item:hover {
+    z-index: 2;
+    transform: scale(1.03);
+    box-shadow: 0 12px 50px rgba(0,0,0,.30);
 }
 
-@media (min-width: 1365px) {
-  .services .service-item:hover {
-    transform: translateY(-10px);
-    border-color: var(--accent-color);
-  }
+.services .service-item:hover::before {
+    background: rgba(0,0,0,.35);
+}
 
-  .services .service-item:hover h3 {
+.services .service-item > * {
+    position: relative;
+    z-index: 1
+}
+
+
+.service-title {
+    font: 700 1.25rem/1.2 var(--heading-font);
+    color: #fff;
+    margin: 0 0 .25rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,.6);
+}
+
+.service-desc {
+    font-size: .9rem;
+    color: rgba(255,255,255,.85);
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+
+.service-price {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffc107;
+    text-shadow: 0 1px 2px rgba(0,0,0,.9);
+}
+
+.services .service-item:hover .service-title,
+.services .service-item:hover .service-desc {
+    color: var(--accent-color); 
+    text-shadow: 0 2px 4px rgba(0,0,0,.6);
+}
+
+.services .service-item .service-title,
+.services .service-item .service-desc {
+    transition: color .45s ease, 
+    text-shadow .45s ease; 
+}
+
+
+.services .service-item:hover .service-title,
+.services .service-item:hover .service-desc {
     color: var(--accent-color);
-  }
+    text-shadow: 0 2px 4px rgba(0,0,0,.6);
 }
+
+
+
+
 
 /*--------------------------------------------------------------
 # Agents Section
