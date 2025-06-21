@@ -5,17 +5,12 @@ using CleanDeal.Models;
 using CleanDeal.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-<<<<<<< HEAD
 using CleanDeal.Services.Email;
 using CleanDeal.Models.Email;
 using Microsoft.Extensions.Options;
-
-
-=======
 using Stripe;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
->>>>>>> d381e8a438ae8347bc54da0119908f2cb47f0a28
 
 
 var builder = WebApplication.CreateBuilder(args);
