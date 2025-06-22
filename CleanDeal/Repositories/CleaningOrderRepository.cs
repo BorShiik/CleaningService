@@ -7,9 +7,11 @@ namespace CleanDeal.Repositories
     public class CleaningOrderRepository : ICleaningOrderRepository
     {
         private readonly ApplicationDbContext _context;
-        public CleaningOrderRepository(ApplicationDbContext context)
+        private readonly ILoyaltyRepository _loyalty;
+        public CleaningOrderRepository(ApplicationDbContext context, ILoyaltyRepository loyalty)
         {
             _context = context;
+            _loyalty = loyalty;
         }
         public async Task AddAsync(CleaningOrder order)
         {
@@ -121,11 +123,27 @@ namespace CleanDeal.Repositories
 
         public async Task CompleteAsync(int id, string cleanerId)
         {
-            var o = await _context.CleaningOrders.FindAsync(id);
+            var o = await _context.CleaningOrders
+                .Include(ord => ord.Payment)
+                .FirstOrDefaultAsync(c => c.Id == id);
             if (o is null || o.CleanerId != cleanerId) return;
             o.Status = OrderStatus.Finished;
             o.IsCompleted = true;
             await _context.SaveChangesAsync();
+
+            if (o.Payment != null)
+            {
+                int points = (int)(o.Payment.Amount / 10);
+                if (points > 0)
+                {
+                    await _loyalty.AddAsync(new LoyaltyTransaction
+                    {
+                        UserId = o.UserId,
+                        Points = points,
+                        Description = $"Order #{o.Id} completed"
+                    });
+                }
+            }
         }
     }
 }
