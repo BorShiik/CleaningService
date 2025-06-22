@@ -14,5 +14,7 @@ namespace CleanDeal.Models
         public ICollection<ChatMessage> SentMessages { get; set; }
         public ICollection<ChatMessage> ReceivedMessages { get; set; }
         public ICollection<Review>? Reviews { get; set; }
+        public int LoyaltyPoints {  get; set; }
+        public ICollection<LoyaltyTransaction>? LoyaltyTransactions { get; set; }
     }
 }

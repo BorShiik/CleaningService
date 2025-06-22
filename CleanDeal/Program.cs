@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Stripe;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using CleanDeal.Services.Loyalty;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,6 +72,8 @@ builder.Services.AddScoped<ICleaningOrderRepository, CleaningOrderRepository>();
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 builder.Services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
 builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
+builder.Services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddSingleton<TemplateRenderer>();
