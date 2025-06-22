@@ -4,6 +4,7 @@ using CleanDeal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanDeal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250621184107_AddGenderToUsers")]
+    partial class AddGenderToUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,9 +60,6 @@ namespace CleanDeal.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("LoyaltyPoints")
-                        .HasColumnType("int");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -202,34 +202,6 @@ namespace CleanDeal.Migrations
                     b.HasIndex("ServiceTypeId");
 
                     b.ToTable("CleaningOrderServices");
-                });
-
-            modelBuilder.Entity("CleanDeal.Models.LoyaltyTransaction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Points")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LoyaltyTransactions");
                 });
 
             modelBuilder.Entity("CleanDeal.Models.Payment", b =>
@@ -615,17 +587,6 @@ namespace CleanDeal.Migrations
                     b.Navigation("ServiceType");
                 });
 
-            modelBuilder.Entity("CleanDeal.Models.LoyaltyTransaction", b =>
-                {
-                    b.HasOne("CleanDeal.Models.ApplicationUser", "User")
-                        .WithMany("LoyaltyTransactions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("CleanDeal.Models.Payment", b =>
                 {
                     b.HasOne("CleanDeal.Models.CleaningOrder", "CleaningOrder")
@@ -744,8 +705,6 @@ namespace CleanDeal.Migrations
                     b.Navigation("CleanerOrders");
 
                     b.Navigation("CleaningOrders");
-
-                    b.Navigation("LoyaltyTransactions");
 
                     b.Navigation("ProductOrders");
 

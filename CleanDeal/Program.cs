@@ -32,6 +32,8 @@ builder.Services.AddDbContext<CleanDeal.Data.ApplicationDbContext>(opt =>
 
 //builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
 
+//builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 {
     opt.Password.RequiredLength = 6;
@@ -87,7 +89,19 @@ builder.Services.AddTransient<IEmailSender>(sp =>
     });
 });
 
+builder.Services.AddLocalization();
+builder.Services.Configure<RequestLocalizationOptions>(opt =>
+{
+    var culture = "pl-PL";
+    var supported = new[] { new CultureInfo(culture) };
+    opt.DefaultRequestCulture = new(culture);
+    opt.SupportedCultures = supported;
+    opt.SupportedUICultures = supported;
+});
+
+
 var app = builder.Build();
+app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 
 using (var scope = app.Services.CreateScope())
 {
