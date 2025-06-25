@@ -60,7 +60,7 @@ namespace CleanDeal.Areas.Identity.Pages.Account.Manage
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
 
-            [Display(Name = "P?e?")]
+            [Display(Name = "P³eæ")]
             public Gender? Gender { get; set; }
 
             [Display(Name = "Avatar")]
