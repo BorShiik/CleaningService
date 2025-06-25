@@ -19,6 +19,7 @@ namespace CleanDeal.Data
         public DbSet<ProductOrder> ProductOrders => Set<ProductOrder>();
         public DbSet<ProductOrderItem> ProductOrderItems => Set<ProductOrderItem>();
         public DbSet<CleaningOrderService> CleaningOrderServices => Set<CleaningOrderService>();
+        public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -100,6 +101,11 @@ namespace CleanDeal.Data
                .WithOne(o => o.Review)
                .HasForeignKey<Review>(r => r.CleaningOrderId)
                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<LoyaltyTransaction>()
+                .HasOne(t => t.User)
+                .WithMany(u => u.LoyaltyTransactions)
+                .HasForeignKey(t => t.UserId);
         }
 
     }

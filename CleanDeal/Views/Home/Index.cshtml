@@ -1,7 +1,29 @@
-﻿@model CleanDeal.ViewModel.HomeIndexViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@model CleanDeal.ViewModel.HomeIndexViewModel
+@inject UserManager<ApplicationUser> UserManager
+@using CleanDeal.Models
 @{
     ViewData["Title"] = "Start";
     Layout = "_Layout";
+
+
+    string selectProfileImg(string userID)
+    {
+        var user = UserManager.FindByIdAsync(userID).Result;
+        if (user?.Avatar != null)
+        {
+            return  "data:image/png;base64," +
+                        Convert.ToBase64String(user.Avatar);
+        }
+        else if (user?.Gender == Gender.Kobieta)
+        {
+            return  "/img/femaleDefaulProfileImg.png";
+        }
+        else
+            return "/img/maleDefaulProfileImg.png";
+    }
+
+
 }
 
 
@@ -141,6 +163,7 @@
                                 @r.Comment
                             </p>
                             <div class="profile mt-auto">
+                                <img src="@selectProfileImg(@r.UserID)" class="testimonial-img" alt="">
                                 <h3>@r.UserFullName</h3>
                             </div>
                         </div>
@@ -159,7 +182,7 @@
             <div class="col-lg-3 col-md-6 d-flex">
                 <i class="bi bi-geo-alt icon"></i>
                 <div class="address">
-                    <h4>Address</h4>
+                    <h4>Adres</h4>
                     <p>Grudziądzka 5-7</p>
                     <p>Toruń, 87-100</p>
                     <p></p>
