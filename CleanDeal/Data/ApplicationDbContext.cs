@@ -26,6 +26,7 @@ namespace CleanDeal.Data
             base.OnModelCreating(b);
 
             b.Entity<Payment>().Property(p => p.Amount).HasPrecision(18, 2);
+            b.Entity<Payment>().Property(p => p.Tip).HasPrecision(18, 2);
             b.Entity<ServiceType>().Property(s => s.BasePrice).HasPrecision(18, 2);
             b.Entity<Product>().Property(p => p.Price).HasPrecision(18, 2);
 

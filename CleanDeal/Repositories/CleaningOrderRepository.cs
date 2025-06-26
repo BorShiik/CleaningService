@@ -110,6 +110,14 @@ namespace CleanDeal.Repositories
                 .Where(o => o.CleanerId == cleanerId)
                 .ToListAsync();
 
+        public async Task<IEnumerable<CleaningOrder>> GetCompletedByCleanerAsync(string cleanerId) =>
+            await _context.CleaningOrders
+                .Include(o => o.ServiceType)
+                .Include(o => o.ServiceItems).ThenInclude(si => si.ServiceType)
+                .Include(o => o.Payment)
+                .Where(o => o.CleanerId == cleanerId && o.Status == OrderStatus.Finished)
+                .ToListAsync();
+
         public async Task AcceptAsync(int id, string cleanerId)
         {
             var o = await _context.CleaningOrders.FindAsync(id);
