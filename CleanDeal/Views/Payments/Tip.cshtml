@@ -1,0 +1,115 @@
+﻿@model CleanDeal.DTOs.CleaningOrderDTO
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
+@{
+    ViewData["Title"] = "Napiwek";
+    var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
+}
+
+<!-- ===== HERO =============================================================== -->
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-cash-stack me-2"></i>Dodaj napiwek
+        </h1>
+        <p class="lead mb-0 opacity-75">Dziękujemy za docenienie pracy naszego sprzątacza!</p>
+    </div>
+</section>
+
+<!-- ===== MAIN =============================================================== -->
+<section class="section">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <!--   PODSUMOWANIE ZLECENIA   -->
+            <div class="col-md-10 col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <!-- 1. Informacje o zleceniu --------------------------------->
+                        <h5 class="fw-semibold mb-3">
+                            <i class="bi bi-journal-text text-success me-1"></i>Szczegóły zlecenia
+                        </h5>
+                        <ul class="list-unstyled small mb-4">
+                            <li>
+                                <span class="text-muted">Numer:</span>
+                                <strong>@Model.Id</strong>
+                            </li>
+                            <li>
+                                <span class="text-muted">Usługi:</span>
+                                @foreach (var s in Model.ServiceNames.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <span class="badge bg-primary me-1">@s.Trim()</span>
+                                }
+                            </li>
+                            @if (Model.TotalPrice is { } price)
+                            {
+                                <li>
+                                    <span class="text-muted">Kwota zlecenia:</span>
+                                    <strong>@price.ToString("c", pl)</strong>
+                                </li>
+                            }
+                        </ul>
+
+                        <!-- 2. Formularz napiwku ------------------------------------->
+                        <h5 class="fw-semibold mb-3">
+                            <i class="bi bi-coin text-success me-1"></i>Wybierz kwotę napiwku
+                        </h5>
+
+                        <div class="row g-3 mb-4 align-items-end">
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <label for="tipInput" class="form-label">Napiwek (PLN)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                    <input type="number"
+                                           id="tipInput"
+                                           class="form-control"
+                                           value="5"
+                                           min="1"
+                                           step="0.5"
+                                           inputmode="decimal" />
+                                </div>
+                                <div class="form-text">Minimalnie 1 zł</div>
+                            </div>
+
+                            <div class="col-12 col-md-auto">
+                                <button id="payBtn" class="btn btn-success btn-lg mb-4">
+                                    <i class="bi bi-heart-fill me-1"></i>Przekaż napiwek
+                                </button>
+                            </div>
+                        </div>
+
+                        <span id="error" class="text-danger fw-semibold"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== STRIPE ============================================================= -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const stripe  = Stripe("@ViewBag.PublishableKey");
+const payBtn  = document.getElementById("payBtn");
+const errorEl = document.getElementById("error");
+const tipInput = document.getElementById("tipInput");
+
+payBtn.addEventListener("click", async () => {
+    payBtn.disabled = true;
+    payBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Przekierowanie…';
+
+    try {
+        const tip = tipInput.value || 0;
+        const resp = await fetch(`/Payments/CreateTipSession?orderId=@Model.Id&tip=${tip}`, {
+            method: "POST",
+            headers: { "RequestVerificationToken": "@csrf" }
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        const { id } = await resp.json();
+        await stripe.redirectToCheckout({ sessionId: id });
+    } catch (e) {
+        errorEl.textContent = e.message ?? e;
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="bi bi-heart-fill me-1"></i>Przekaż napiwek';
+    }
+});
+</script>

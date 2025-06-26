@@ -15,6 +15,8 @@ namespace CleanDeal.Mapping
                                 : new[] { s.ServiceType.Name })))
                 .ForMember(d => d.PaymentAmount,
                            o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
+                .ForMember(d => d.TipAmount,
+                           o => o.MapFrom(s => s.Payment != null ? s.Payment.Tip : (decimal?)null))
                 .ForMember(d => d.TotalPrice,
                            o => o.MapFrom(s => s.TotalPrice != null ? s.TotalPrice : (decimal?)null))
                 .ForMember(d => d.HasReview,

@@ -52,31 +52,38 @@ namespace CleanDeal.Controllers
                 var session = (Session)stripeEvent.Data.Object;
                 var orderId = int.Parse(session.Metadata["orderId"]);
                 var orderType = session.Metadata.TryGetValue("orderType", out var t)
-                                ? t : "cleaning";   
+                    ? t : "cleaning";
+                session.Metadata.TryGetValue("tip", out var tipStr);
+                decimal tip = 0m;
 
-                
-                if (await _payRepo.GetByOrderIdAsync(orderId) != null)
+                decimal.TryParse(tipStr, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out tip);
+
+
+                var existing = await _payRepo.GetByOrderIdAsync(orderId);
+
+                if (orderType == "product" && existing != null)
                     return Ok();
 
-                var payment = new Payment
-                {
-                    Amount = (session.AmountTotal ?? 0) / 100m,
-                    PaymentDate = DateTime.UtcNow,
-                    CleaningOrderId = orderType == "cleaning" ? orderId : null,
-                    ProductOrderId = orderType == "product" ? orderId : null
-                };
 
-                
-                if (orderType == "cleaning" && await _cleanRepo.GetByIdAsync(orderId) == null)
+                if (orderType.StartsWith("cleaning") && await _cleanRepo.GetByIdAsync(orderId) == null)
                     return BadRequest("Cleaning order not found");
                 if (orderType == "product" && await _prodRepo.GetByIdAsync(orderId) == null)
                     return BadRequest("Product order not found");
 
-                await _payRepo.AddAsync(payment);
+
 
 
                 if (orderType == "product")
                 {
+                    var payment = new Payment
+                    {
+                        Amount = (session.AmountTotal ?? 0) / 100m,
+                        PaymentDate = DateTime.UtcNow,
+                        ProductOrderId = orderId
+                    };
+                    await _payRepo.AddAsync(payment);
+
                     var order = await _prodRepo.GetByIdAsync(orderId);
                     if (order != null)
                     {
@@ -86,9 +93,29 @@ namespace CleanDeal.Controllers
                         }
                     }
                 }
+                else
+                {
+                    if (existing == null)
+                    {
+                        var payment = new Payment
+                        {
+                            Amount = ((session.AmountTotal ?? 0) / 100m) - tip,
+                            Tip = tip,
+                            PaymentDate = DateTime.UtcNow,
+                            CleaningOrderId = orderId
+                        };
+                        await _payRepo.AddAsync(payment);
+                    }
+                    else if (tip > 0)
+                    {
+                        existing.Tip += tip;
+                        await _payRepo.UpdateAsync(existing);
+                    }
+                }
             }
 
-            return Ok();
+                return Ok();
+            }
         }
     }
-}
+

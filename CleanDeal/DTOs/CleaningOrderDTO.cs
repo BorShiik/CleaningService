@@ -14,6 +14,7 @@ namespace CleanDeal.DTOs
         public string UserEmail { get; set; } = string.Empty;
         public bool IsPaid => PaymentAmount.HasValue;
         public decimal? PaymentAmount { get; set; }
+        public decimal? TipAmount { get; set; }
         public decimal? TotalPrice { get; set; }
         public bool HasReview { get; set; }
         public int? ReviewRating { get; set; }

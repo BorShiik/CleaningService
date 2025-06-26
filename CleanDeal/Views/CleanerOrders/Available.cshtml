@@ -1,24 +1,60 @@
 ﻿@model IEnumerable<CleanDeal.DTOs.CleanerAvailableOrderDTO>
 @{
     ViewData["Title"] = "Wolne zlecenia";
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-<h2>@ViewData["Title"]</h2>
 
-<table class="table table-hover">
-    <thead><tr><th>Data</th><th>Adres</th><th>Usługa</th><th></th></tr></thead>
-    <tbody>
-        @foreach (var o in Model)
-        {
-            <tr>
-                <td>@o.Date:g</td>
-                <td>@o.Address</td>
-                <td>@o.ServiceNames</td>
-                <td>
-                    <form asp-action="Accept" asp-route-id="@o.Id" method="post">
-                        <button class="btn btn-success btn-sm">Przyjmij</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-inboxes me-2"></i>@ViewData["Title"]
+        </h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container" data-aos="fade-up">
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data</th>
+                                <th>Adres</th>
+                                <th>Usługi</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var o in Model)
+                            {
+                                <tr>
+                                    <td>@o.Date.ToString("g", pl)</td>
+                                    <td>@o.Address</td>
+                                    <td>
+                                        @foreach (var s in o.ServiceNames.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-primary me-1">@s.Trim()</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <form asp-action="Accept" asp-route-id="@o.Id" method="post" class="d-inline">
+                                            <button class="btn btn-success">
+                                                <i class="bi bi-check2-circle me-1"></i>Przyjmij
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>

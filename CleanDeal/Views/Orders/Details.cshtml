@@ -44,7 +44,7 @@
                             <dt class="col-sm-4">Rodzaje usług</dt>
                             <dd class="col-sm-8">
                                 @foreach (var s in (Model.ServiceNames ?? "")
-                                                  .Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                 .Split(',', StringSplitOptions.RemoveEmptyEntries))
                                 {
                                     <span class="badge bg-primary me-1">@s.Trim()</span>
                                 }
@@ -68,8 +68,15 @@
 
                             <dt class="col-sm-4">Kwota</dt>
                             <dd class="col-sm-8 fw-semibold">
-                                @Model.TotalPrice?.ToString("c", pl) 
+                                @Model.TotalPrice?.ToString("c", pl)
                             </dd>
+                            @if (Model.TipAmount.HasValue && Model.TipAmount > 0)
+                            {
+                                <dt class="col-sm-4">Napiwek</dt>
+                                <dd class="col-sm-8 fw-semibold">
+                                    @Model.TipAmount?.ToString("c", pl)
+                                </dd>
+                            }
 
                             <dt class="col-sm-4">Ocena klienta</dt>
                             <dd class="col-sm-8">
@@ -97,6 +104,12 @@
                                 <a asp-controller="Review" asp-action="Create"
                                    asp-route-orderId="@Model.Id" class="btn btn-warning">
                                     <i class="bi bi-star me-1"></i>Oceń usługę
+                                </a>
+                            }
+                            @if (Model.IsPaid && Model.Status == "Ukończone")
+                            {
+                                <a asp-controller="Payments" asp-action="Tip" asp-route-id="@Model.Id" class="btn btn-outline-success">
+                                    <i class="bi bi-cash-coin me-1"></i>Napiwek
                                 </a>
                             }
                             <a asp-controller="Chat" asp-action="Order"

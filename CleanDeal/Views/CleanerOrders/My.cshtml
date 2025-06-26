@@ -1,27 +1,78 @@
 ﻿@model IEnumerable<CleanDeal.DTOs.CleanerMyOrderDTO>
 @{
     ViewData["Title"] = "Moje zlecenia";
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
+
+    string StatusBadge(string s) => s switch
+    {
+        "Finished" or "Ukończone" => "bg-success",
+        "Cancelled" or "Anulowane" => "bg-danger",
+        "Pending" or "Oczekuje" => "bg-warning text-dark",
+        _ => "bg-primary"
+    };
 }
-<h2>@ViewData["Title"]</h2>
-<table class="table table-striped">
-    <thead><tr><th>Data</th><th>Adres</th><th>Usługa</th><th>Status</th><th></th></tr></thead>
-    <tbody>
-        @foreach (var o in Model)
-        {
-            <tr>
-                <td>@o.Date:g</td>
-                <td>@o.Address</td>
-                <td>@o.ServiceNames</td>
-                <td>@o.Status</td>
-                <td>
-                    @if (o.CanComplete)
-                    {
-                        <form asp-action="Complete" asp-route-id="@o.Id" method="post" class="d-inline">
-                            <button class="btn btn-warning btn-sm">Zakończ</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-clipboard-data me-2"></i>@ViewData["Title"]
+        </h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container" data-aos="fade-up">
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data</th>
+                                <th>Adres</th>
+                                <th>Usługi</th>
+                                <th>Status</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var o in Model)
+                            {
+                                <tr>
+                                    <td>@o.Date.ToString("g", pl)</td>
+                                    <td>@o.Address</td>
+
+                                    <td>
+                                        @foreach (var s in o.ServiceNames.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-primary me-1">@s.Trim()</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-secondary @StatusBadge(o.Status)">@o.Status</span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        @if (o.CanComplete)
+                                        {
+                                            <form asp-action="Complete" asp-route-id="@o.Id" method="post" class="d-inline">
+                                                <button class="btn btn-warning">
+                                                    <i class="bi bi-flag me-1"></i>Zakończ
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
