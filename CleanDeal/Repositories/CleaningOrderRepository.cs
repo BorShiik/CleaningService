@@ -151,6 +151,35 @@ namespace CleanDeal.Repositories
                         Description = $"Order #{o.Id} completed"
                     });
                 }
+
+                var avgRating = await _context.Reviews
+                    .Include(r => r.CleaningOrder)
+                    .Where(r => r.CleaningOrder.CleanerId == cleanerId)
+                    .AverageAsync(r => (double?)r.Rating) ?? 0;
+
+                if (avgRating >= 4.8)
+                {
+                    int bonus = (int)(o.Payment.Amount * 0.05m);
+                    await _loyalty.AddAsync(new LoyaltyTransaction
+                    {
+                        UserId = cleanerId,
+                        Points = bonus,
+                        Description = $"Bonus za ocenę {avgRating:F1}"
+                    });
+                }
+
+                var completed = await _context.CleaningOrders
+                    .CountAsync(ord => ord.CleanerId == cleanerId && ord.Status == OrderStatus.Finished);
+
+                if (completed % 20 == 0)
+                {
+                    await _loyalty.AddAsync(new LoyaltyTransaction
+                    {
+                        UserId = cleanerId,
+                        Points = 50,
+                        Description = "Bonus za 20 ukończonych zleceń"
+                    });
+                }
             }
         }
     }
