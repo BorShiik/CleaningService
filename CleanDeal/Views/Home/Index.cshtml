@@ -97,14 +97,17 @@
                 <div class="col">
                     <div class="service-item"
                          style="background-image:url('@Url.Content($"~/img/services/Service{s.Id}.jpg")')">
-                        <a asp-controller="Services" asp-action="Details" asp-route-id="@s.Id"
-                           class="stretched-link text-decoration-none">
-                            <h3 class="service-title">@s.Name</h3>
-                        </a>
-                        <p class="service-desc">@s.Description</p>
-                        <span class="service-price">@s.BasePrice.ToString("c")</span>
+                        <div class="service-content">
+                            <a asp-controller="Services" asp-action="Details" asp-route-id="@s.Id"
+                               class="stretched-link text-decoration-none">
+
+                                <h3 class="service-title">@s.Name</h3>
+                            </a>
+                            <p class="service-desc">@s.Description</p>
+                            <span class="service-price">@s.BasePrice.ToString("c")</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
             }
         </div>
     </div>
