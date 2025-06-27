@@ -40,7 +40,7 @@ namespace CleanDeal.Data
             const string clientAnna = "client3@cleaning.local";
             const string annaPass = "Anna123$";
 
-            var clientMarcinUser = new ApplicationUser
+           /* var clientMarcinUser = new ApplicationUser
             {
                 UserName = clientMarcin,
                 Email = clientMarcin,
@@ -49,7 +49,7 @@ namespace CleanDeal.Data
                 Gender = Gender.Mężczyzna
             };
 
-            var clientAnnanUser = new ApplicationUser
+            var clientAnnaUser = new ApplicationUser
             {
                 UserName = clientAnna,
                 Email = clientAnna,
@@ -57,6 +57,12 @@ namespace CleanDeal.Data
                 FullName = "Anna",
                 Gender = Gender.Kobieta
             };
+
+            await userManager.CreateAsync(clientMarcinUser, marcinPass);
+            await userManager.AddToRoleAsync(clientMarcinUser, "Client");
+
+            await userManager.CreateAsync(clientAnnaUser, annaPass);
+            await userManager.AddToRoleAsync(clientAnnaUser, "Client");*/
 
             var cleaner = await userManager.FindByEmailAsync(cleanerEmail);
             if(cleaner is null)
@@ -88,7 +94,6 @@ namespace CleanDeal.Data
                     await userManager.AddToRoleAsync(admin, "Admin");
             }
 
-           
             if (!await context.ServiceTypes.AnyAsync())
             {
                 var servicesList = new List<ServiceType>
@@ -176,8 +181,9 @@ namespace CleanDeal.Data
                     Cleaner = await userManager.FindByEmailAsync(cleanerEmail),
                     Date = DateTime.Today.AddDays(2).AddHours(9),
                     Status = OrderStatus.Finished,
-                    IsCompleted = true
+                    IsCompleted = true,
                 };
+
                 context.CleaningOrders.Add(order);
                 await context.SaveChangesAsync();
 
@@ -201,8 +207,135 @@ namespace CleanDeal.Data
 
                 context.ChatMessages.Add(chatMessage);
 
+                context.Reviews.Add(new Review
+                {
+                    CleaningOrderId = order.Id,
+                    Rating = 5,
+                    Comment = "Ekipa CleanDeal zostawiła mieszkanie w lepszym stanie" +
+                    " niż je odebrałam od dewelopera. Zero smug na oknach, fugi odświeżone," +
+                    " nawet trudno dostępne zakamarki kuchni lśniły. Dzięki temu bez problemu odzyskałam pełną kaucję",
+                    CreatedAt = DateTime.UtcNow
+                });
+
                 await context.SaveChangesAsync();
+
+                var clientMarcinUser = new ApplicationUser
+                {
+                    UserName = clientMarcin,
+                    Email = clientMarcin,
+                    EmailConfirmed = true,
+                    FullName = "Marcin",
+                    Gender = Gender.Mężczyzna
+                };
+                await userManager.CreateAsync(clientMarcinUser, marcinPass);
+                await userManager.AddToRoleAsync(clientMarcinUser, "Client");
+
+                var marcinOrder = new CleaningOrder
+                {
+                    UserId = clientMarcinUser.Id,
+                    ServiceTypeId = await context.ServiceTypes
+                                                   .Where(s => s.Name == "Biała Kuchnia +")
+                                                   .Select(s => s.Id)
+                                                   .FirstAsync(),
+                    Address = "ul. Wiosenna 2, Kraków",
+                    Cleaner = await userManager.FindByEmailAsync(cleanerEmail),
+                    Date = DateTime.Today.AddDays(3).AddHours(10),
+                    Status = OrderStatus.Finished,
+                    IsCompleted = true
+                };
+                context.CleaningOrders.Add(marcinOrder);
+                await context.SaveChangesAsync();
+
+                var paymentMarcin = new Payment
+                {
+                    CleaningOrderId = marcinOrder.Id,
+                    Amount = 150,
+                    PaymentDate = DateTime.UtcNow,
+                    ProductOrderId = null
+                };
+                context.Payments.Add(paymentMarcin);
+
+                var chatMessageMarcin = new ChatMessage
+                {
+                    CleaningOrderId = marcinOrder.Id,
+                    Content = "Hello, your cleaner is on the way!",
+                    SenderId = admin.Id,
+                    ReceiverId = clientMarcinUser.Id,
+                    SentAt = DateTime.UtcNow
+                };
+                context.ChatMessages.Add(chatMessageMarcin);
+
+                context.Reviews.Add(new Review
+                {
+                    CleaningOrderId = marcinOrder.Id,
+                    Rating = 5,
+                    Comment = "Fronty i blaty wyglądają jak nowe! Zniknęły żółte naloty przy okapie," +
+                    " a fugi znowu są białe. Pachnąco i bez agresywnej chemii" +
+                    " – polecam każdemu miłośnikowi jasnych kuchni",
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                var clientAnnaUser = new ApplicationUser
+                {
+                    UserName = clientAnna,
+                    Email = clientAnna,
+                    EmailConfirmed = true,
+                    FullName = "Anna",
+                    Gender = Gender.Kobieta
+                };
+                await userManager.CreateAsync(clientAnnaUser, annaPass);
+                await userManager.AddToRoleAsync(clientAnnaUser, "Client");
+
+                var annaOrder = new CleaningOrder
+                {
+                    UserId = clientAnnaUser.Id,
+                    ServiceTypeId = await context.ServiceTypes
+                                                   .Where(s => s.Name == "Zen Bedroom")
+                                                   .Select(s => s.Id)
+                                                   .FirstAsync(),
+                    Address = "ul. Letnia 5, Warszawa",
+                    Cleaner = await userManager.FindByEmailAsync(cleanerEmail),
+                    Date = DateTime.Today.AddDays(4).AddHours(14),
+                    Status = OrderStatus.Finished,
+                    IsCompleted = true
+                };
+                context.CleaningOrders.Add(annaOrder);
+                await context.SaveChangesAsync();
+
+                var paymentAnna = new Payment
+                {
+                    CleaningOrderId = annaOrder.Id,
+                    Amount = 180,
+                    PaymentDate = DateTime.UtcNow,
+                    ProductOrderId = null
+                };
+                context.Payments.Add(paymentAnna);
+
+                var chatMessageAnna = new ChatMessage
+                {
+                    CleaningOrderId = annaOrder.Id,
+                    Content = "Hello, your cleaner is on the way!",
+                    SenderId = admin.Id,
+                    ReceiverId = clientAnnaUser.Id,
+                    SentAt = DateTime.UtcNow
+                };
+                context.ChatMessages.Add(chatMessageAnna);
+
+                context.Reviews.Add(new Review
+                {
+                    CleaningOrderId = annaOrder.Id,
+                    Rating = 4,
+                    Comment = "Delikatne środki czystości nie podrażniły moich alergii;" +
+                    " ekipa zadbała nawet o rośliny przy oknie." +
+                    " Mały minus za pominięcie jednego gniazdka przy wycieraniu, ale poza tym idealnie",
+                    CreatedAt = DateTime.UtcNow
+                });
+
+
+                await context.SaveChangesAsync();
+
             }
+
         }
     }
 }
