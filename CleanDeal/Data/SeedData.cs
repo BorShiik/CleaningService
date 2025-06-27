@@ -69,11 +69,44 @@ namespace CleanDeal.Data
             {
                 var servicesList = new List<ServiceType>
                 {
-                    new() { Name = "Sprzątanie generalne",   BasePrice = 200 },
-                    new() { Name = "Sprzątanie lokalne",     BasePrice = 150 },
-                    new() { Name = "Mycie okien",            BasePrice = 120 },
-                    new() { Name = "Czyszczenie piekarnika", BasePrice =  80 },
-                    new() { Name = "Czyszczenie mikrofali",  BasePrice =  60 }
+                    new() { Name = "Biała Kuchnia +",
+                            Description = "Kompleksowe odtłuszczanie kuchni. Przywracamy blask" +
+                            " i higienę wszystkich powierzchni w kuchni" + "Zakres prac: " +
+                            "szafki, fronty, płytki, sprzęt AGD, blaty, podłoga, rozjaśnianie fug",
+                            BasePrice = 279 },
+                    new() { Name = "Mikro-Mgiełka",
+                            Description = "Dezynfekcja i odświeżanie blatów. Eko-rozpylacz + rękawiczka =" +
+                            " sterylna powierzchnia w 15 min. Zakres prac: " +
+                            "blaty, stoły, powierzchnie robocze, klamki, uchwyty",
+                            BasePrice = 59 },
+                    new() { Name = "Sala Ready",
+                            Description = "Serwis biura / sali konferencyjnej. Lśniący stół, zero okruszków, pachnąca przestrzeń spotkań. " +
+                            "Zakres prac: przecieranie mebli, dezynfekcja krzeseł, zamiatanie/odkurzanie, kosze",
+                            BasePrice = 139 },
+                    new() { Name = "Plam-Stop", 
+                            Description = "Punktowe usuwanie rozlewów i śladów. Natychmiastowa interwencja, aby posadzka nie ucierpiała. " +
+                            "Zakres prac: usunięcie plamy, odtłuszczenie, neutralizacja zapachu, polerka",
+                            BasePrice =  89 },
+                    new() { Name = "Ogród w Kadrze",
+                            Description = "Mycie szkieletu altan i domków. Zielony domek znowu wygląda jak nowy – bez mchu i kurzu. " +
+                            "Zakres prac: mycie ciśnieniowe ścian, dachu, czyszczenie okienek, impregnacja",
+                            BasePrice =  199 },
+                    new() { Name = "Shaggy Fresh",
+                            Description = "Pranie dywanów z długim włosem. Miękkość i zapach świeżości bez resztek detergentów. " +
+                            "Zakres prac: odkurzanie, aktywna piana, ekstrakcja wodna, suszenie turbo",
+                            BasePrice =  149 },
+                    new() { Name = "Zen Bedroom",
+                            Description = "Odkurzanie & pielęgnacja sypialni. Kurz znika, zostaje spokój – idealne warunki do snu. " +
+                            "Zakres prac: ścieranie mebli, odkurzanie materaca, mycie podłogi, rośliny",
+                            BasePrice =  169 },
+                    new() { Name = "Lśniąca Łazienka 360",
+                            Description = "Kabina, fugi i armatura bez kamienia ani zacieków. " +
+                            "Zakres prac: odkamienianie, polerowanie szkła, dezynfekcja toalety, podłoga",
+                            BasePrice =  189 },
+                    new() { Name = "Przeprowadzka Pro",
+                            Description = "Sprzątanie po wyprowadzce. Oddaj mieszkanie jak nowe, odzyskaj kaucję bez stresu. " +
+                            "Zakres prac: mycie wszystkich pomieszczeń, okien, szafek, punktowe naprawki",
+                            BasePrice =  349 },
                 };
                 await context.ServiceTypes.AddRangeAsync(servicesList);
                 await context.SaveChangesAsync();
@@ -111,7 +144,7 @@ namespace CleanDeal.Data
                 {
                     UserId = client.Id,
                     ServiceTypeId = await context.ServiceTypes
-                                                 .Where(s => s.Name == "Sprzątanie generalne")
+                                                 .Where(s => s.Name == "Przeprowadzka Pro")
                                                  .Select(s => s.Id)
                                                  .FirstAsync(),
                     Address = "ul. Przykładowa 1, Kraków",
