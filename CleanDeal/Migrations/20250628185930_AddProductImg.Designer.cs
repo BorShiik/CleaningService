@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanDeal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250628144924_AddProductImageUrl")]
-    partial class AddProductImageUrl
+    [Migration("20250628185930_AddProductImg")]
+    partial class AddProductImg
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,6 +102,34 @@ namespace CleanDeal.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("CleanDeal.Models.Availability", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CleanerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CleanerId");
+
+                    b.ToTable("Availabilities");
                 });
 
             modelBuilder.Entity("CleanDeal.Models.ChatMessage", b =>
@@ -288,7 +316,10 @@ namespace CleanDeal.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ImageMimeType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -414,6 +445,7 @@ namespace CleanDeal.Migrations
                         .HasColumnType("nvarchar(150)");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -477,7 +509,8 @@ namespace CleanDeal.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Percentage")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("Redeemed")
                         .HasColumnType("bit");
@@ -629,6 +662,17 @@ namespace CleanDeal.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("CleanDeal.Models.Availability", b =>
+                {
+                    b.HasOne("CleanDeal.Models.ApplicationUser", "Cleaner")
+                        .WithMany()
+                        .HasForeignKey("CleanerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cleaner");
                 });
 
             modelBuilder.Entity("CleanDeal.Models.ChatMessage", b =>

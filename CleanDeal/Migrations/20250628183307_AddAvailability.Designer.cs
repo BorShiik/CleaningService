@@ -4,6 +4,7 @@ using CleanDeal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanDeal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250628183307_AddAvailability")]
+    partial class AddAvailability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,7 +114,7 @@ namespace CleanDeal.Migrations
 
                     b.Property<string>("CleanerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -123,6 +126,8 @@ namespace CleanDeal.Migrations
                         .HasColumnType("time");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CleanerId");
 
                     b.ToTable("Availabilities");
                 });
@@ -313,9 +318,6 @@ namespace CleanDeal.Migrations
 
                     b.Property<byte[]>("Image")
                         .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("ImageMimeType")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -657,6 +659,17 @@ namespace CleanDeal.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("CleanDeal.Models.Availability", b =>
+                {
+                    b.HasOne("CleanDeal.Models.ApplicationUser", "Cleaner")
+                        .WithMany()
+                        .HasForeignKey("CleanerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cleaner");
                 });
 
             modelBuilder.Entity("CleanDeal.Models.ChatMessage", b =>
