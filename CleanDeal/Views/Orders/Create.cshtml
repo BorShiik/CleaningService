@@ -1,8 +1,10 @@
 ﻿@model CleanDeal.ViewModel.OrderCreateViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
 @{
     ViewData["Title"] = "Nowe zamówienie";
     Layout = "_Layout";
     var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
+    var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
     bool isAdmin = User.IsInRole("Admin");
 
     var prices = ViewBag.ServicePrices as IDictionary<int, decimal>;
@@ -54,9 +56,14 @@
                                         @opt.Text
                                     </span>
 
-                                    <span class="badge bg-light text-dark fw-semibold"
-                                          data-price="@price">
-                                        @price.ToString("c", pl)
+                                    <span>
+                                        <span class="badge bg-light text-dark fw-semibold me-2" data-price="@price">
+                                            @price.ToString("c", pl)
+                                        </span>
+                                        @if (!isAdmin)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-primary buy-discount" data-id="@id">Kup zniżkę 10% (100 pkt)</button>
+                                        }
                                     </span>
                                 </label>
                             }
@@ -99,6 +106,7 @@
     <script>
         const checkboxes = document.querySelectorAll('input[name="ServiceTypeIds"]');
         const totalLbl = document.getElementById('totalPrice');
+        const discounts = {};
 
         function updateRowState(cb) {
             cb.closest('.list-group-item').classList.toggle('active', cb.checked);
@@ -110,7 +118,9 @@
                 if (cb.checked) {
                     const price = parseFloat(cb.closest('.list-group-item')
                         .querySelector('[data-price]').dataset.price);
-                    sum += price;
+                    const id = cb.value;
+                    const finalPrice = discounts[id] ? price * 0.9 : price;
+                    sum += finalPrice;
                 }
             });
             totalLbl.textContent = sum.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
@@ -121,6 +131,25 @@
             cb.addEventListener('change', () => {
                 updateRowState(cb);
                 updateTotal();
+            });
+        });
+
+        document.querySelectorAll('.buy-discount').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.id;
+                try {
+                    const resp = await fetch('@Url.Action("PurchaseDiscount", "Services")', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': '@csrf' },
+                        body: new URLSearchParams({ id })
+                    });
+                    if (!resp.ok) throw new Error(await resp.text());
+                    discounts[id] = true;
+                    btn.remove();
+                    updateTotal();
+                } catch (err) {
+                    alert(err);
+                }
             });
         });
         updateTotal();
