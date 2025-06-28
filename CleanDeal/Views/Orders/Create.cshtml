@@ -66,6 +66,7 @@
                         </div>
 
                         <button type="button" class="btn btn-sm btn-outline-primary buy-discount-all mt-2">Kup zniżkę 10% (100 pkt)</button>
+                        <div id="discountError" class="text-danger small mt-1 d-none"></div>
 
                         <span asp-validation-for="ServiceTypeIds" class="text-danger"></span>
                     </div>
@@ -132,6 +133,7 @@
         });
 
         const btnDiscount = document.querySelector('.buy-discount-all');
+        const errorBox = document.getElementById('discountError');
         if (btnDiscount) {
             btnDiscount.addEventListener('click', async () => {
                 try {
@@ -142,9 +144,13 @@
                     if (!resp.ok) throw new Error(await resp.text());
                     discount = true;
                     btnDiscount.remove();
+                    if (errorBox) errorBox.classList.add('d-none');
                     updateTotal();
                 } catch (err) {
-                    alert(err);
+                    if (errorBox) {
+                        errorBox.textContent = err;
+                        errorBox.classList.remove('d-none');
+                    }
                 }
             });
         }

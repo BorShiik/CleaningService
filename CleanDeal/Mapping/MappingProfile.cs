@@ -19,6 +19,8 @@ namespace CleanDeal.Mapping
                            o => o.MapFrom(s => s.Payment != null ? s.Payment.Tip : (decimal?)null))
                 .ForMember(d => d.TotalPrice,
                            o => o.MapFrom(s => s.TotalPrice != null ? s.TotalPrice : (decimal?)null))
+                .ForMember(d => d.LoyaltyPoints,
+                           o => o.MapFrom(s => s.Payment != null ? (int)(s.Payment.Amount / 10) : 0))
                 .ForMember(d => d.HasReview,
                            o => o.MapFrom(s => s.Review != null))
                 .ForMember(d => d.Cleaner,
@@ -65,7 +67,9 @@ namespace CleanDeal.Mapping
 
             CreateMap<ProductOrder, ProductOrderDTO>()
                 .ForMember(d => d.PaymentAmount,
-                           o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null));
+                           o => o.MapFrom(s => s.Payment != null ? s.Payment.Amount : (decimal?)null))
+                .ForMember(d => d.LoyaltyPoints,
+                           o => o.MapFrom(s => s.Payment != null ? (int)(s.Payment.Amount / 10) : 0));
 
             CreateMap<ProductOrderCreateViewModel, ProductOrder>()
                 .ForMember(o => o.User, opt => opt.Ignore())

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanDeal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250628144924_AddProductImageUrl")]
-    partial class AddProductImageUrl
+    [Migration("20250628161801_AddTransaction")]
+    partial class AddTransaction
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -414,6 +414,7 @@ namespace CleanDeal.Migrations
                         .HasColumnType("nvarchar(150)");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -477,7 +478,8 @@ namespace CleanDeal.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Percentage")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<bool>("Redeemed")
                         .HasColumnType("bit");
