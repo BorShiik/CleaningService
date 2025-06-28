@@ -1,46 +1,113 @@
 ﻿@model CleanDeal.DTOs.CleaningOrderDTO
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
 @{
-	ViewData["Title"] = "Płatność";
-	var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
+    ViewData["Title"] = "Płatność";
+    var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-<h2>Podsumowanie płatności</h2>
 
-<p>
-    Usługi: <strong>@Model.ServiceNames</strong><br />
-    Kwota do zapłaty: <strong>@ViewBag.AmountDisplay.ToString("c")</strong>
-</p>
+<link rel="stylesheet" href="~/css/product-card.css" asp-append-version="true" />
 
-<div class="mb-3">
-    <label for="tipInput" class="form-label">Napiwek (zł)</label>
-    <input type="number" id="tipInput" class="form-control" value="0" min="0" step="0.5" />
-</div>
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-credit-card me-2"></i>@ViewData["Title"]
+        </h1>
+    </div>
+</section>
 
-<button id="payBtn" class="btn btn-success">Zapłać teraz</button>
-<span id="error" class="text-danger ms-2"></span>
+<section class="section">
+    <div class="container" data-aos="fade-up">
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-light fw-semibold">
+                        Twoje usługi
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var svc in Model.ServiceNames.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@svc.Trim()</span>
+                                    @{
+                                        var price = ViewBag.ServicePrices is IDictionary<string, decimal> dic && dic.ContainsKey(svc.Trim())
+                                            ? dic[svc.Trim()]
+                                            : (decimal?)null;
+                                    }
+                                    <span class="fw-semibold">
+                                        @price?.ToString("c", pl)
+                                    </span>
+                                </li>
+                            }
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                                <span class="fw-bold">Razem</span>
+                                <span class="fw-bold">@ViewBag.AmountDisplay.ToString("c", pl)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-light fw-semibold">
+                        Finalizacja
+                    </div>
+                    <div class="card-body">
+
+                        <div class="mb-3">
+                            <label for="tipInput" class="form-label fw-semibold">
+                                Napiwek (zł)
+                            </label>
+                            <input type="number"
+                                   id="tipInput"
+                                   class="form-control"
+                                   value="0"
+                                   min="0"
+                                   step="0.5" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button id="payBtn" class="btn btn-success btn-lg">
+                                <i class="bi bi-lock me-1"></i>Zapłać teraz
+                            </button>
+                        </div>
+
+                        <div class="mt-2 text-danger small" id="error"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
 
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-const stripe  = Stripe("@ViewBag.PublishableKey");
-const payBtn  = document.getElementById("payBtn");
-const errorEl = document.getElementById("error");
-const tipInput = document.getElementById("tipInput");
+(() => {
+    const stripe  = Stripe('@ViewBag.PublishableKey');
+    const payBtn  = document.getElementById('payBtn');
+    const errorEl = document.getElementById('error');
+    const tipIn   = document.getElementById('tipInput');
 
-payBtn.addEventListener("click", async () => {
-    payBtn.disabled = true;
-    try {
-        const tip = tipInput.value || 0;
-        const resp = await fetch(`/Payments/CreateCheckoutSession?orderId=@Model.Id&tip=${tip}`, {
-            method: "POST",
-            headers: { "RequestVerificationToken": "@csrf" }
-        });
-        if (!resp.ok) throw new Error(await resp.text());
-        const { id } = await resp.json();
-        await stripe.redirectToCheckout({ sessionId: id });
-
-    } catch (e) {
-        errorEl.textContent = e.message ?? e;
-        payBtn.disabled = false;
-    }
-});
+    payBtn.addEventListener('click', async () => {
+        payBtn.disabled = true;
+        errorEl.textContent = '';
+        try {
+            const tip = parseFloat(tipIn.value) || 0;
+            const resp = await fetch(`/Payments/CreateCheckoutSession?orderId=@Model.Id&tip=${tip}`, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': '@csrf' }
+            });
+            if (!resp.ok) throw new Error(await resp.text());
+            const { id } = await resp.json();
+            await stripe.redirectToCheckout({ sessionId: id });
+        } catch (e) {
+            errorEl.textContent = e.message ?? e;
+            payBtn.disabled = false;
+        }
+    });
+})();
 </script>

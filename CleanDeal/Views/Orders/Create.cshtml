@@ -5,149 +5,169 @@
     Layout = "_Layout";
     var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
     var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
-    bool isAdmin = User.IsInRole("Admin");
+    var isAdmin = User.IsInRole("Admin");
+    var prices = (IDictionary<int, decimal>)ViewBag.ServicePrices!;
+    var opts = Model.ServiceTypeOptions!;
+}
 
-    var prices = ViewBag.ServicePrices as IDictionary<int, decimal>;
+@section Styles{
+    <link rel="stylesheet" href="~/css/service-card.css" asp-append-version="true" />
 }
 
 <section class="section dark-background py-4">
     <div class="container text-center text-white">
-        <h1 class="fw-bold mb-0">
-            <i class="bi bi-plus-circle me-2"></i>@ViewData["Title"]
-        </h1>
+        <h1 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2"></i>@ViewData["Title"]</h1>
     </div>
 </section>
 
 <section class="section">
-    <div class="container col-lg-6" data-aos="zoom-in">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
+    <form asp-action="Create" method="post" class="needs-validation" novalidate>
 
-                <form asp-action="Create" method="post" novalidate>
+        <div class="container">
+            <div class="row g-5">
 
-                    <div class="mb-3">
-                        <label asp-for="Date" class="form-label fw-semibold"></label>
-                        <input asp-for="Date" class="form-control" type="datetime-local" />
-                        <span asp-validation-for="Date" class="text-danger"></span>
-                    </div>
+                <div class="col-lg-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body p-4">
 
-                    <div class="mb-3">
-                        <label asp-for="Address" class="form-label fw-semibold"></label>
-                        <input asp-for="Address" class="form-control" />
-                        <span asp-validation-for="Address" class="text-danger"></span>
-                    </div>
+                            <div class="mb-3">
+                                <label asp-for="Date" class="form-label fw-semibold"></label>
+                                <input asp-for="Date" type="datetime-local" class="form-control" required />
+                                <span asp-validation-for="Date" class="text-danger small"></span>
+                            </div>
 
-                    <div class="mb-3">
-                        <label asp-for="ServiceTypeIds" class="form-label fw-semibold"></label>
+                            <div class="mb-3">
+                                <label asp-for="Address" class="form-label fw-semibold"></label>
+                                <input asp-for="Address" class="form-control" required />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
 
-                        <div class="list-group">
-                            @foreach (var opt in Model.ServiceTypeOptions!)
+                            @if (isAdmin)
                             {
-                                var id = int.Parse(opt.Value!);
-                                var price = prices![id];
-
-                                <label class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span class="d-flex align-items-center">
-                                        <input type="checkbox"
-                                               name="ServiceTypeIds"
-                                               value="@opt.Value"
-                                               class="form-check-input me-2"
-                                               @(opt.Selected ? "checked" : "") />
-                                        @opt.Text
-                                    </span>
-
-                                    <span>
-                                        <span class="badge bg-light text-dark fw-semibold me-2" data-price="@price">
-                                            @price.ToString("c", pl)
-                                        </span>
-                                    </span>
-                                </label>
+                                <div class="mb-3">
+                                    <label asp-for="UserEmail" class="form-label fw-semibold"></label>
+                                    <input asp-for="UserEmail" class="form-control" />
+                                    <span asp-validation-for="UserEmail" class="text-danger small"></span>
+                                </div>
                             }
+
+                            <div class="mb-4">
+                                <h5 class="fw-semibold mb-1">Łączna kwota</h5>
+                                <p id="totalPrice" class="fs-4 fw-bold mb-0">0,00 zł</p>
+                                <span asp-validation-for="ServiceTypeIds" class="text-danger small"></span>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 mb-3">
+                                <i class="bi bi-check2-circle me-1"></i>Złóż zamówienie
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary w-100 buy-discount-all">
+                                Kup zniżkę 10% (100&nbsp;pkt)
+                            </button>
+                            <div id="discountError" class="text-danger small mt-1 d-none"></div>
+
                         </div>
-
-                        <button type="button" class="btn btn-sm btn-outline-primary buy-discount-all mt-2">Kup zniżkę 10% (100 pkt)</button>
-
-                        <span asp-validation-for="ServiceTypeIds" class="text-danger"></span>
                     </div>
+                </div>
 
-                    @if (isAdmin)
-                    {
-                        <div class="mb-3">
-                            <label asp-for="UserEmail" class="form-label fw-semibold"></label>
-                            <input asp-for="UserEmail" class="form-control" />
-                            <span asp-validation-for="UserEmail" class="text-danger"></span>
-                        </div>
-                    }
+                <div class="col-lg-8">
+                    <div id="servicesGrid" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
 
-                    <div class="mb-4">
-                        <h5 class="fw-semibold mb-1">Łączna kwota</h5>
-                        <p id="totalPrice" class="fs-4 fw-bold mb-0">0,00 zł</p>
+                        @for (int i = 0; i < opts.Count(); i++)
+                        {
+                            var opt = opts.ElementAt(i);
+                            var price = prices[int.Parse(opt.Value!)];
+                            var act = opt.Selected ? "active" : "";
+                            var htmlId = $"svc_{i}";
+
+                            <div class="col">
+                                <label class="card service-card @act" data-price="@price" for="@htmlId">
+
+                                    <input id="@htmlId"
+                                           type="checkbox"
+                                           name="ServiceTypeIds[]"
+                                           value="@opt.Value"
+                                           class="d-none"
+                                           @(opt.Selected ? "checked" : null) />
+
+                                    <div class="card__shine"></div>
+                                    <div class="card__glow"></div>
+
+                                    <div class="card__content">
+                                        <div class="card__badge">USŁUGA</div>
+                                        <div class="card__image"></div>
+
+                                        <div class="card__text">
+                                            <p class="card__title">@opt.Text</p>
+                                        </div>
+
+                                        <div class="card__footer">
+                                            <div class="card__price">@price.ToString("c", pl)</div>
+                                            <div class="card__button pointer-events-none">
+                                                <svg width="16" height="16" viewBox="0 0 24 24">
+                                                    <path d="M4 12H20M12 4V20"
+                                                          stroke="currentColor" stroke-width="2" fill="currentColor" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        }
                     </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check2-circle me-1"></i>Złóż zamówienie
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary">
-                            Anuluj
-                        </a>
-                    </div>
-                </form>
+                </div>
 
             </div>
         </div>
-    </div>
+    </form>
 </section>
 
-@section Scripts {
+@section Scripts{
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const checkboxes = document.querySelectorAll('input[name="ServiceTypeIds"]');
-        const totalLbl = document.getElementById('totalPrice');
-        let discount = false;
+        (() => {
+            const grid     = document.getElementById('servicesGrid');
+            const totalLbl = document.getElementById('totalPrice');
+            const btnDisc  = document.querySelector('.buy-discount-all');
+            const errBox   = document.getElementById('discountError');
+            let discount   = false;
 
-        function updateRowState(cb) {
-            cb.closest('.list-group-item').classList.toggle('active', cb.checked);
-        }
+            const fmt = v => v.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
 
-        function updateTotal() {
-            let sum = 0;
-            checkboxes.forEach(cb => {
-                if (cb.checked) {
-                    const price = parseFloat(cb.closest('.list-group-item')
-                        .querySelector('[data-price]').dataset.price);
-                    const finalPrice = discount ? price * 0.9 : price;
-                    sum += finalPrice;
-                }
+            function recalc() {
+                let sum = 0;
+                grid.querySelectorAll('input[type=checkbox]:checked').forEach(cb => {
+                    const base = parseFloat(cb.closest('.service-card').dataset.price);
+                    sum += discount ? base * 0.9 : base;
+                });
+                totalLbl.textContent = fmt(sum);
+            }
+
+            grid.addEventListener('change', e => {
+                if (!e.target.matches('input[type=checkbox]')) return;
+                e.target.closest('.service-card').classList.toggle('active', e.target.checked);
+                recalc();
             });
-            totalLbl.textContent = sum.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
-        }
 
-        checkboxes.forEach(cb => {
-            updateRowState(cb);
-            cb.addEventListener('change', () => {
-                updateRowState(cb);
-                updateTotal();
-            });
-        });
-
-        const btnDiscount = document.querySelector('.buy-discount-all');
-        if (btnDiscount) {
-            btnDiscount.addEventListener('click', async () => {
+            btnDisc.addEventListener('click', async () => {
                 try {
-                    const resp = await fetch('@Url.Action("PurchaseDiscount", "Services")', {
+                    const resp = await fetch('@Url.Action("PurchaseDiscount","Services")', {
                         method: 'POST',
                         headers: { 'RequestVerificationToken': '@csrf' }
                     });
                     if (!resp.ok) throw new Error(await resp.text());
                     discount = true;
-                    btnDiscount.remove();
-                    updateTotal();
+                    btnDisc.remove();
+                    errBox.classList.add('d-none');
+                    recalc();
                 } catch (err) {
-                    alert(err);
+                    errBox.textContent = err;
+                    errBox.classList.remove('d-none');
                 }
             });
-        }
-        updateTotal();
+
+            recalc();
+        })();
     </script>
 }

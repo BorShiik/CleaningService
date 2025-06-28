@@ -12,10 +12,6 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanDeal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-<<<<<<<< HEAD:CleanDeal/Migrations/20250628161342_AddNewTransaction.Designer.cs
-    [Migration("20250628161342_AddNewTransaction")]
-    partial class AddNewTransaction
-========
 <<<<<<<< HEAD:CleanDeal/Migrations/20250628160200_AddProductImageUrl.Designer.cs
     [Migration("20250628160200_AddProductImageUrl")]
     partial class AddProductImageUrl
@@ -23,7 +19,6 @@ namespace CleanDeal.Migrations
     [Migration("20250628161801_AddTransaction")]
     partial class AddTransaction
 >>>>>>>> 5ad733223d43e397e9e02223b02ca54eb8688623:CleanDeal/Migrations/20250628161801_AddTransaction.Designer.cs
->>>>>>>> 66f43b521e4e689e10698ea527208eefcfc847cc:CleanDeal/Migrations/20250628160200_AddProductImageUrl.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

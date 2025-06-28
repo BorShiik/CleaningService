@@ -7,8 +7,6 @@ namespace CleanDeal.Models
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
-
-       // public ICollection<CleaningOrder>? CleaningOrders { get; set; }
         [Range(0, 10_000)]
         public decimal BasePrice { get; set; }
     }

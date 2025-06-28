@@ -76,6 +76,7 @@
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-outline-primary buy-discount" data-total="@ViewBag.Total">Kup zniżkę 10% (100 pkt)</button>
+                                        <div id="discountError" class="text-danger small mt-1 d-none"></div>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -100,6 +101,7 @@
             const btn = document.querySelector('.buy-discount');
             if (!btn) return;
             const totalLbl = document.getElementById('totalPrice');
+            const errorBox = document.getElementById('discountError');
             let total = parseFloat(btn.dataset.total);
             btn.addEventListener('click', async () => {
                 try {
@@ -111,8 +113,12 @@
                     total = total * 0.9;
                     totalLbl.textContent = total.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
                     btn.remove();
+                    if (errorBox) errorBox.classList.add('d-none');
                 } catch (err) {
-                    alert(err);
+                    if (errorBox) {
+                        errorBox.textContent = err;
+                        errorBox.classList.remove('d-none');
+                    }
                 }
             });
         })();

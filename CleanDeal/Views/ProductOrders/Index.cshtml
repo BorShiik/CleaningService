@@ -27,6 +27,7 @@
                                 <th scope="col">Dostawa</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Kwota</th>
+                                <th scope="col">Punkty</th>
                                 <th scope="col" class="text-end"></th>
                             </tr>
                         </thead>
@@ -48,6 +49,7 @@
                                         }
                                     </td>
                                     <td>@(o.PaymentAmount?.ToString("c", pl) ?? "-")</td>
+                                    <td>@o.LoyaltyPoints</td>
                                     <td class="text-end">
                                         <a asp-action="Details"
                                            asp-route-id="@o.Id"
