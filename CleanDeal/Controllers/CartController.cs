@@ -1,5 +1,4 @@
-﻿// Controllers/CartController.cs
-using CleanDeal.Models;
+﻿using CleanDeal.Models;
 using CleanDeal.Repositories;
 using CleanDeal.ViewModel;
 using Microsoft.AspNetCore.Authorization;
@@ -17,18 +16,21 @@ namespace CleanDeal.Controllers
         private readonly IProductOrderRepository _orderRepo;
         private readonly IPaymentRepository _paymentRepo;
         private readonly IConfiguration _cfg;
+        private readonly Services.Loyalty.ILoyaltyService _loyalty;
 
         private const string CartKey = "cart";   
 
         public CartController(IProductRepository productRepo,
                               IPaymentRepository paymentRepo,
                               IConfiguration cfg,
-                              IProductOrderRepository orderRepo)
+                              IProductOrderRepository orderRepo,
+                              Services.Loyalty.ILoyaltyService loyalty)
         {
             _productRepo = productRepo;
             _paymentRepo = paymentRepo;
             _cfg = cfg;
             _orderRepo = orderRepo;
+            _loyalty = loyalty;
         }
 
         
@@ -45,7 +47,10 @@ namespace CleanDeal.Controllers
                     items.Add(new CartItemViewModel { Product = product, Quantity = qty });
             }
 
-            ViewBag.Total = items.Sum(i => i.Product.Price * i.Quantity);
+            var total = items.Sum(i => i.Product.Price * i.Quantity);
+            if (HttpContext.Session.GetInt32("ProductDiscount") == 1)
+                total *= 0.9m;
+            ViewBag.Total = total;
             return View(items);
         }
 
@@ -83,7 +88,21 @@ namespace CleanDeal.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        
+        [HttpPost]
+        public async Task<IActionResult> PurchaseDiscount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var balance = await _loyalty.GetBalanceAsync(userId);
+            const int cost = 100;
+            if (balance < cost)
+            {
+                return BadRequest("Brak punktów");
+            }
+
+            await _loyalty.AwardPointsAsync(userId, -cost, "Product discount");
+            HttpContext.Session.SetInt32("ProductDiscount", 1);
+            return Ok();
+        }
 
         [HttpGet]
         public async Task<IActionResult> Checkout()
@@ -182,12 +201,19 @@ namespace CleanDeal.Controllers
                     ProductOrderId = order.Id
                 });
 
+                int points = (int)(amount / 10);
+                if (points > 0)
+                {
+                    await _loyalty.AwardPointsAsync(order.UserId, points, $"Order #{order.Id} products");
+                }
+
                 foreach (var item in order.Items)
                 {
                     await _productRepo.DecreaseStockAsync(item.ProductId, item.Quantity);
                 }
             }
             HttpContext.Session.Remove(CartKey);
+            HttpContext.Session.Remove("ProductDiscount");
             TempData["Message"] = "Płatność zakończona pomyślnie.";
             return RedirectToAction("Index", "Products");
         }
@@ -232,7 +258,7 @@ namespace CleanDeal.Controllers
                     Quantity = item.Quantity,
                     PriceData = new SessionLineItemPriceDataOptions
                     {
-                        UnitAmount = (long)(product.Price * 100),
+                        UnitAmount = (long)(((HttpContext.Session.GetInt32("ProductDiscount") == 1 ? product.Price * 0.9m : product.Price)) * 100),
                         Currency = "pln",
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
@@ -266,7 +292,10 @@ namespace CleanDeal.Controllers
                 var product = await _productRepo.GetByIdAsync(productId);
                 if (product != null) items.Add(new CartItemViewModel { Product = product, Quantity = qty });
             }
-            ViewBag.Total = items.Sum(i => i.Product.Price * i.Quantity);
+            var total = items.Sum(i => i.Product.Price * i.Quantity);
+            if (HttpContext.Session.GetInt32("ProductDiscount") == 1)
+                total *= 0.9m;
+            ViewBag.Total = total;
             ViewBag.Items = items;
         }
     }
