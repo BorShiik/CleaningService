@@ -35,6 +35,7 @@
                                 <th scope="col">Usługa</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Kwota</th>
+                                <th scope="col">Punkty</th>
                                 <th scope="col" class="text-end"></th>
                             </tr>
                         </thead>
@@ -70,6 +71,7 @@
                                         }
                                     </td>
                                     <td>@(o.TotalPrice?.ToString("c", pl) ?? "-")</td>
+                                    <td>@o.LoyaltyPoints</td>
 
                                     <td class="text-end">
                                         <div class="btn-group" role="group">

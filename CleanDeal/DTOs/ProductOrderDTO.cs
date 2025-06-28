@@ -10,5 +10,6 @@ namespace CleanDeal.DTOs
         public DeliveryMethod DeliveryMethod { get; set; }
         public decimal? PaymentAmount { get; set; }
         public IEnumerable<ProductOrderItemDTO>? Items { get; set; }
+        public int LoyaltyPoints { get; set; }
     }
 }

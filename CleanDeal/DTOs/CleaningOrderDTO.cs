@@ -18,5 +18,6 @@ namespace CleanDeal.DTOs
         public decimal? TotalPrice { get; set; }
         public bool HasReview { get; set; }
         public int? ReviewRating { get; set; }
+        public int LoyaltyPoints { get; set; }
     }
 }
