@@ -23,6 +23,11 @@ namespace CleanDeal.Services.Loyalty
             await _repo.AddAsync(tx);
         }
 
+        public async Task RedeemPointsAsync(string userId, int points, string description)
+        {
+            await AwardPointsAsync(userId, -points, description);
+        }
+
         public Task<int> GetBalanceAsync(string userId) => _repo.GetBalanceAsync(userId);
         public Task<IEnumerable<LoyaltyTransaction>> GetHistoryAsync(string userId) => _repo.GetByUserAsync(userId);
     }
