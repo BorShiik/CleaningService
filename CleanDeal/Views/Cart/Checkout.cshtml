@@ -1,58 +1,157 @@
 ﻿@model CleanDeal.ViewModel.ProductOrderCreateViewModel
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiF
+
 @{
     ViewData["Title"] = "Dane dostawy";
     var csrf = AntiF.GetAndStoreTokens(Context).RequestToken;
     var items = ViewBag.Items as IEnumerable<CleanDeal.ViewModel.CartItemViewModel>;
+    var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
-<h2>Dane dostawy</h2>
-<form method="post">
-    <div class="mb-3">
-        <label asp-for="Address" class="form-label"></label>
-        <input asp-for="Address" class="form-control" />
-        <span asp-validation-for="Address" class="text-danger"></span>
+
+<section class="section dark-background py-4">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-truck me-2"></i>@ViewData["Title"]
+        </h1>
     </div>
-    <div class="mb-3">
-        <label asp-for="DeliveryMethod" class="form-label"></label>
-        <select asp-for="DeliveryMethod" class="form-select">
-            <option value="Courier">Kurier</option>
-            <option value="PickupPoint">Punkt odbioru</option>
-        </select>
-        <span asp-validation-for="DeliveryMethod" class="text-danger"></span>
+</section>
+
+<section class="section">
+    <div class="container" data-aos="fade-up">
+
+        <div class="row g-4">
+            <!-- Formularz dostawy -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-light fw-semibold">
+                        Adres i metoda dostawy
+                    </div>
+                    <div class="card-body">
+                        <form id="orderForm"
+                              asp-action="Checkout"
+                              asp-controller="Cart"
+                              method="post"
+                              class="needs-validation"
+                              novalidate>
+
+                            <input type="hidden" name="__RequestVerificationToken" value="@csrf" />
+
+                            <div class="mb-3">
+                                <label asp-for="Address" class="form-label"></label>
+                                <input asp-for="Address" class="form-control" required />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="DeliveryMethod" class="form-label"></label>
+                                <select asp-for="DeliveryMethod" class="form-select" required>
+                                    <option value="">-- wybierz --</option>
+                                    <option value="Courier">Kurier</option>
+                                    <option value="PickupPoint">Punkt odbioru</option>
+                                </select>
+                                <span asp-validation-for="DeliveryMethod" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-credit-card me-1"></i>Zapłać
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Podsumowanie koszyka -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-light fw-semibold">
+                        Twoje produkty
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nazwa</th>
+                                        <th class="text-center">Ilość</th>
+                                        <th class="text-end">Cena</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var it in items)
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold">@it.Product.Name</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-primary">@it.Quantity</span>
+                                            </td>
+                                            <td class="text-end">
+                                                @((it.Product.Price * it.Quantity).ToString("c", pl))
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="2" class="text-end fw-bold">Razem:</td>
+                                        <td class="text-end fw-bold">
+                                            @ViewBag.Total.ToString("c", pl)
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <h4>Produkty</h4>
-    <table class="table">
-        <thead>
-            <tr><th>Nazwa</th><th>Ilość</th><th>Cena</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var item in items)
-            {
-                <tr>
-                    <td>@item.Product.Name</td>
-                    <td>@item.Quantity</td>
-                    <td>@(item.Product.Price * item.Quantity)</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <p><strong>Razem:</strong> @ViewBag.Total.ToString("c")</p>
-    <button type="submit" class="btn btn-success">Zapłać</button>
-</form>
+</section>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="https://js.stripe.com/v3/"></script>
+
     <script>
-        document.querySelector('form').addEventListener('submit', async e => {
-            e.preventDefault();
-            const resp = await fetch('', {
-                method: 'POST',
-                headers: { 'RequestVerificationToken': '@csrf' },
-                body: new FormData(e.target)
+        (() => {
+            const form = document.getElementById('orderForm');
+            const btn  = form.querySelector('button[type="submit"]');
+            const token = '@csrf';            // anti-forgery
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                btn.disabled = true;
+
+                try {
+                    const resp = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token,
+                            'Accept': 'application/json'
+                        },
+                        body: new FormData(form)
+                    });
+
+                    if (!resp.ok)
+                        throw new Error(await resp.text());
+
+                    const { id, key } = await resp.json();      //  ← Json из контроллера
+                    await Stripe(key).redirectToCheckout({ sessionId: id });
+
+                } catch (err) {
+                    alert(err.message || err);
+                    btn.disabled = false;
+                }
             });
-            const { id, key } = await resp.json();
-            const stripe = Stripe(key);
-            await stripe.redirectToCheckout({ sessionId: id });
-        });
+        })();
     </script>
 }
+

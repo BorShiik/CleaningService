@@ -20,6 +20,9 @@ namespace CleanDeal.Data
         public DbSet<ProductOrderItem> ProductOrderItems => Set<ProductOrderItem>();
         public DbSet<CleaningOrderService> CleaningOrderServices => Set<CleaningOrderService>();
         public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
+        public DbSet<ServicePackage> ServicePackages => Set<ServicePackage>();
+        public DbSet<ServicePackageItem> ServicePackageItems => Set<ServicePackageItem>();
+        public DbSet<UserServiceDiscount> UserServiceDiscounts => Set<UserServiceDiscount>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -107,6 +110,36 @@ namespace CleanDeal.Data
                 .HasOne(t => t.User)
                 .WithMany(u => u.LoyaltyTransactions)
                 .HasForeignKey(t => t.UserId);
+
+            b.Entity<ServicePackageItem>()
+                .HasOne(i => i.ServicePackage)
+                .WithMany(p => p.Items)
+                .HasForeignKey(i => i.ServicePackageId);
+
+            b.Entity<ServicePackageItem>()
+                .HasOne(i => i.ServiceType)
+                .WithMany()
+                .HasForeignKey(i => i.ServiceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<UserServiceDiscount>()
+                .HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId);
+
+            b.Entity<UserServiceDiscount>()
+                .HasOne(d => d.ServiceType)
+                .WithMany()
+                .HasForeignKey(d => d.ServiceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<UserServiceDiscount>()
+                .Property(d => d.Percentage)
+                .HasPrecision(5, 2);
+
+            b.Entity<ServicePackage>()
+                .Property(p => p.Price)
+                .HasPrecision(18, 2);
         }
 
     }
