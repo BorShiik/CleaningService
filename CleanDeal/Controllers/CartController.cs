@@ -157,9 +157,14 @@ namespace CleanDeal.Controllers
 
             await _orderRepo.UpdateAsync(order);
 
-            
-            HttpContext.Session.Remove(CartKey);
-            return Redirect(session.Url);   
+
+            // HttpContext.Session.Remove(CartKey);
+            // return Redirect(session.Url);
+            return Json(new                       
+            {
+                id = session.Id,
+                key = _cfg["Stripe:PublishableKey"]
+            });
         }
 
        
@@ -182,7 +187,7 @@ namespace CleanDeal.Controllers
                     await _productRepo.DecreaseStockAsync(item.ProductId, item.Quantity);
                 }
             }
-
+            HttpContext.Session.Remove(CartKey);
             TempData["Message"] = "Płatność zakończona pomyślnie.";
             return RedirectToAction("Index", "Products");
         }
