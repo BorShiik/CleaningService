@@ -128,6 +128,7 @@
     width: 32px;
     height: 32px; 
     border-radius: 50%;
+    border: 0;
     color: #fff;
     background: var(--card-accent);
     display: flex;

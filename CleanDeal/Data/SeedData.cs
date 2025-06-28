@@ -40,29 +40,6 @@ namespace CleanDeal.Data
             const string clientAnna = "client3@cleaning.local";
             const string annaPass = "Anna123$";
 
-           /* var clientMarcinUser = new ApplicationUser
-            {
-                UserName = clientMarcin,
-                Email = clientMarcin,
-                EmailConfirmed = true,
-                FullName = "Marcin",
-                Gender = Gender.Mężczyzna
-            };
-
-            var clientAnnaUser = new ApplicationUser
-            {
-                UserName = clientAnna,
-                Email = clientAnna,
-                EmailConfirmed = true,
-                FullName = "Anna",
-                Gender = Gender.Kobieta
-            };
-
-            await userManager.CreateAsync(clientMarcinUser, marcinPass);
-            await userManager.AddToRoleAsync(clientMarcinUser, "Client");
-
-            await userManager.CreateAsync(clientAnnaUser, annaPass);
-            await userManager.AddToRoleAsync(clientAnnaUser, "Client");*/
 
             var cleaner = await userManager.FindByEmailAsync(cleanerEmail);
             if(cleaner is null)

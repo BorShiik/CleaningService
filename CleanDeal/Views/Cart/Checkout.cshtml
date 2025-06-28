@@ -20,7 +20,7 @@
     <div class="container" data-aos="fade-up">
 
         <div class="row g-4">
-            <!-- Formularz dostawy -->
+
             <div class="col-lg-5">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-light fw-semibold">
@@ -62,7 +62,6 @@
                 </div>
             </div>
 
-            <!-- Podsumowanie koszyka -->
             <div class="col-lg-7">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-light fw-semibold">
@@ -118,7 +117,7 @@
         (() => {
             const form = document.getElementById('orderForm');
             const btn  = form.querySelector('button[type="submit"]');
-            const token = '@csrf';            // anti-forgery
+            const token = '@csrf';            
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -143,7 +142,7 @@
                     if (!resp.ok)
                         throw new Error(await resp.text());
 
-                    const { id, key } = await resp.json();      //  ← Json из контроллера
+                    const { id, key } = await resp.json();      
                     await Stripe(key).redirectToCheckout({ sessionId: id });
 
                 } catch (err) {
