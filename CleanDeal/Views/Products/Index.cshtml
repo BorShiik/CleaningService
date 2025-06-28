@@ -2,15 +2,21 @@
 @{
     ViewData["Title"] = "Produkty";
     bool isAdmin = User.IsInRole("Admin");
-    bool isCleaner = User.IsInRole("Cleaner");   
+    bool isCleaner = User.IsInRole("Cleaner");
     var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
+
+<link rel="stylesheet" href="~/css/product-create.css" />
 
 
 <section class="section dark-background py-5">
     <div class="container text-center text-white">
         <h1 class="fw-bold mb-0">Nasze produkty</h1>
-        <p class="opacity-75">Środki czystości i akcesoria dostępne dla klientów oraz sprzątaczy</p>
+        <p class="opacity-75">
+            Środki czystości i akcesoria dostępne
+            @(isAdmin ? "dla administratora" : (isCleaner ? "dla ekip sprzątających" : "dla klientów"))
+        </p>
+
         @if (isAdmin)
         {
             <a asp-action="Create" class="btn btn-success mt-3">
@@ -23,75 +29,92 @@
 
 <section class="section">
     <div class="container" data-aos="fade-up">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Nazwa</th>
-                        <th>Cena</th>
-                        <th>Dostępne</th>
-                        <th class="text-center">
-                            @(isAdmin ? "Akcje" : "Koszyk")
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in Model)
-                    {
-                        <tr>
-                            <td>@p.Name</td>
-                            <td>@p.Price.ToString("c", pl)</td>
-                            <td>
-                                @if (p.StockQuantity > 0)
-                                {
-                                    @p.StockQuantity
-                                }
-                                else
-                                {
-                                    <span class="text-danger">товар распродан</span>
-                                }
-                            </td>
+            @foreach (var p in Model)
+            {
+                <div class="col">
+                    <div class="card product-preview h-100 @(p.StockQuantity == 0 ? "opacity-50" : "")">
+                        <div class="card__shine"></div>
+                        <div class="card__glow"></div>
+
+                        <div class="card__content">
+
+                            <div class="card__badge @(p.StockQuantity == 0 ? "bg-danger" : "")">
+                                @(p.StockQuantity == 0
+                                    ? "BRAK"
+                                    : (p.StockQuantity <= 10 ? "LOW" : "NEW"))
+                            </div>
 
 
-                            <td class="text-center">
+                            <div class="card__image" style="--bg-color:#8b5cf6"></div>
+
+
+                            <div class="card__text">
+                                <p class="card__title">@p.Name</p>
+                                <p class="card__description">
+                                    @(p.StockQuantity > 0
+                                        ? $"Dostępne: {p.StockQuantity}"
+                                        : "Towar chwilowo niedostępny")
+                                </p>
+                            </div>
+
+
+                            <div class="card__footer">
+
+                                <div class="card__price">
+                                    @p.Price.ToString("c", pl)
+                                </div>
+
+                                @* ▼▼▼ Akcje ▼▼▼ *@
                                 @if (isAdmin)
                                 {
-                                    <a asp-action="Edit" asp-route-id="@p.Id"
-                                       class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@p.Id"
-                                       class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a asp-action="Edit" asp-route-id="@p.Id"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Edytuj">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@p.Id"
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Usuń">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
                                 }
                                 else
                                 {
                                     if (p.StockQuantity > 0)
                                     {
-                                        <form asp-controller="Cart" asp-action="Add" method="post"
-                                              class="d-inline-flex align-items-center">
+                                        <form asp-controller="Cart" asp-action="Add"
+                                              method="post" class="m-0">
                                             <input type="hidden" name="id" value="@p.Id" />
-                                            <input type="number" name="qty" value="1" min="1"
-                                                   class="form-control form-control-sm me-2"
-                                                   style="width:80px;" />
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="bi bi-cart-plus me-1"></i>Dodaj
+                                            <input type="hidden" name="qty" value="1" />
+                                            <button type="submit" class="card__button"
+                                                    title="Dodaj do koszyka">
+                                                <svg height="16" width="16" viewBox="0 0 24 24">
+                                                    <path stroke-width="2" stroke="currentColor"
+                                                          d="M4 12H20M12 4V20" fill="currentColor"></path>
+                                                </svg>
                                             </button>
                                         </form>
                                     }
                                     else
                                     {
-                                        <span class="text-danger">Недоступен</span>
+                                        <span class="text-danger small">Niedostępny</span>
                                     }
                                 }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
     </div>
 </section>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

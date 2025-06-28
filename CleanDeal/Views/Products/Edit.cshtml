@@ -5,67 +5,108 @@
     var pl = System.Globalization.CultureInfo.GetCultureInfo("pl-PL");
 }
 
+<link rel="stylesheet" href="~/css/product-create.css" />
+
 <section class="section dark-background py-4">
     <div class="container text-center text-white">
-        <h1 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2"></i>Edytuj produkt</h1>
+        <h1 class="fw-bold mb-0">
+            <i class="bi bi-pencil-square me-2"></i>Edytuj produkt
+        </h1>
         <p class="opacity-75">@Model.Name</p>
     </div>
 </section>
 
 <section class="section">
-    <div class="container col-lg-6" data-aos="zoom-in">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
+    <div class="container">
+        <div class="row g-5 justify-content-center" data-aos="zoom-in">
 
-                <form asp-action="Edit" method="post" novalidate>
-                    <input type="hidden" asp-for="Id" />
-                    <div asp-validation-summary="All" class="alert alert-danger"></div>
+            
+            <div class="col-lg-4 col-md-6 col-sm-10">
+                <div class="card shadow-sm border-0 h-100 product-form-card">
+                    <div class="card-body p-4">
 
-                    <div class="mb-3">
-                        <label asp-for="Name" class="form-label fw-semibold"></label>
-                        <input asp-for="Name" class="form-control" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
+                        <form asp-action="Edit" method="post" class="needs-validation" novalidate>
+                            <input type="hidden" asp-for="Id" />
+
+                           @* <div asp-validation-summary="All" class="alert alert-danger"></div>*@
+
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label fw-semibold"></label>
+                                <input asp-for="Name" class="form-control" id="inpName" required />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Price" class="form-label fw-semibold"></label>
+                                <input asp-for="Price" class="form-control" id="inpPrice" required />
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="StockQuantity" class="form-label fw-semibold"></label>
+                                <input asp-for="StockQuantity" class="form-control" id="inpQty" required />
+                                <span asp-validation-for="StockQuantity" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Category" class="form-label fw-semibold"></label>
+                                <select asp-for="Category"
+                                        asp-items="Html.GetEnumSelectList<CleanDeal.Models.ProductCategory>()"
+                                        class="form-select" id="selCat" required>
+                                    <option value="">-- wybierz kategorię --</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-1"></i>Zapisz
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">Anuluj</a>
+                            </div>
+                        </form>
+
                     </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Price" class="form-label fw-semibold"></label>
-                        <input asp-for="Price" class="form-control" />
-                        <span asp-validation-for="Price" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="StockQuantity" class="form-label fw-semibold"></label>
-                        <input asp-for="StockQuantity" class="form-control" />
-                        <span asp-validation-for="StockQuantity" class="text-danger"></span>
-                    </div>
-
-
-                    <div class="mb-3">
-                        <label asp-for="Category" class="form-label fw-semibold"></label>
-                        <select asp-for="Category"
-                                asp-items="Html.GetEnumSelectList<CleanDeal.Models.ProductCategory>()"
-                                class="form-select">
-                            <option value="">-- wybierz kategorię --</option>
-                        </select>
-                        <span asp-validation-for="Category" class="text-danger"></span>
-                    </div>
-
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-1"></i>Zapisz
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary">
-                            Anuluj
-                        </a>
-                    </div>
-                </form>
-
+                </div>
             </div>
+
+            
+            <div class="col-lg-4 d-flex justify-content-center">
+                <div class="card product-preview">
+                    <div class="card__shine"></div>
+                    <div class="card__glow"></div>
+
+                    <div class="card__content">
+                        <div class="card__badge" id="prevBadge">EDIT</div>
+                        <div class="card__image" id="prevImg" style="--bg-color:#a78bfa"></div>
+
+                        <div class="card__text">
+                            <p class="card__title" id="prevTitle">@Model.Name</p>
+                            <p class="card__description" id="prevDesc">
+                                Edytujesz istniejący produkt – zmiany widoczne natychmiast.
+                            </p>
+                        </div>
+
+                        <div class="card__footer">
+                            <div class="card__price" id="prevPrice">
+                                @(Model.Price.ToString("c", pl))
+                            </div>
+                            <div class="card__button">
+                                <svg height="16" width="16" viewBox="0 0 24 24">
+                                    <path stroke-width="2" stroke="currentColor"
+                                          d="M4 12H20M12 4V20" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
 
-@section Scripts {
+@section Scripts{
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/product-create.js"></script>
 }
