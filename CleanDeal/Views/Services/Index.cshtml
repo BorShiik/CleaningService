@@ -7,7 +7,10 @@
 <section class="section dark-background py-5">
     <div class="container text-center text-white">
         <h1 class="fw-bold mb-0">Nasze usługi</h1>
-        <p class="opacity-75">Saldo punktów: @Model.LoyaltyPoints</p>
+        @if (!User.IsInRole("Cleaner") && !User.IsInRole("Admin"))
+        {
+            <p class="opacity-75">Saldo punktów: @Model.LoyaltyPoints</p>
+        }
     </div>
 </section>
 
@@ -29,15 +32,7 @@
                         <tr>
                             <td>@s.Name</td>
                             <td>@s.BasePrice.ToString("c", pl)</td>
-                            <td>
-                                @if (User.Identity?.IsAuthenticated == true)
-                                {
-                                    <form asp-action="PurchaseDiscount" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@s.Id" />
-                                        <button type="submit" class="btn btn-sm btn-primary">Kup zniżkę 10% (100 pkt)</button>
-                                    </form>
-                                }
-                            </td>
+                            <td></td>
                         </tr>
                     }
                 </tbody>

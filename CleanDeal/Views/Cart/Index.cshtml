@@ -71,10 +71,12 @@
                                         class="text-end fw-bold">
                                         Razem:
                                     </td>
-                                    <td class="text-end fw-bold">
+                                    <td class="text-end fw-bold" id="totalPrice">
                                         @ViewBag.Total.ToString("c", pl)
                                     </td>
-                                    <td></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary buy-discount" data-total="@ViewBag.Total">Kup zniżkę 10% (100 pkt)</button>
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -91,3 +93,28 @@
         }
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        (() => {
+            const btn = document.querySelector('.buy-discount');
+            if (!btn) return;
+            const totalLbl = document.getElementById('totalPrice');
+            let total = parseFloat(btn.dataset.total);
+            btn.addEventListener('click', async () => {
+                try {
+                    const resp = await fetch('@Url.Action("PurchaseDiscount","Cart")', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': '@csrf' }
+                    });
+                    if (!resp.ok) throw new Error(await resp.text());
+                    total = total * 0.9;
+                    totalLbl.textContent = total.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
+                    btn.remove();
+                } catch (err) {
+                    alert(err);
+                }
+            });
+        })();
+    </script>
+}
