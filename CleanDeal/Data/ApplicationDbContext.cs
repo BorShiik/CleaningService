@@ -132,6 +132,14 @@ namespace CleanDeal.Data
                 .WithMany()
                 .HasForeignKey(d => d.ServiceTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            b.Entity<UserServiceDiscount>()
+                .Property(d => d.Percentage)
+                .HasPrecision(5, 2);
+
+            b.Entity<ServicePackage>()
+                .Property(p => p.Price)
+                .HasPrecision(18, 2);
         }
 
     }
