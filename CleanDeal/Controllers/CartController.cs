@@ -99,7 +99,6 @@ namespace CleanDeal.Controllers
                 return BadRequest("Brak punktów");
             }
 
-            await _loyalty.AwardPointsAsync(userId, -cost, "Product discount");
             HttpContext.Session.SetInt32("ProductDiscount", 1);
             return Ok();
         }
@@ -121,7 +120,10 @@ namespace CleanDeal.Controllers
                 if (product != null) items.Add(new CartItemViewModel { Product = product, Quantity = qty });
             }
 
-            ViewBag.Total = items.Sum(i => i.Product.Price * i.Quantity);
+            var total = items.Sum(i => i.Product.Price * i.Quantity);
+            if (HttpContext.Session.GetInt32("ProductDiscount") == 1)
+                total *= 0.9m;
+            ViewBag.Total = total;
             ViewBag.Items = items;
             return View(new ProductOrderCreateViewModel());
         }
@@ -194,6 +196,9 @@ namespace CleanDeal.Controllers
             if (order is { Payment: null })
             {
                 var amount = order.Items.Sum(i => i.Product.Price * i.Quantity);
+                var hasDiscount = HttpContext.Session.GetInt32("ProductDiscount") == 1;
+                if (hasDiscount)
+                    amount *= 0.9m;
                 await _paymentRepo.AddAsync(new Payment
                 {
                     Amount = amount,
@@ -205,6 +210,11 @@ namespace CleanDeal.Controllers
                 if (points > 0)
                 {
                     await _loyalty.AwardPointsAsync(order.UserId, points, $"Order #{order.Id} products");
+                }
+
+                if (hasDiscount)
+                {
+                    await _loyalty.AwardPointsAsync(order.UserId, -100, "Product discount");
                 }
 
                 foreach (var item in order.Items)
@@ -221,7 +231,8 @@ namespace CleanDeal.Controllers
         public async Task<IActionResult> Cancel(int orderId)
         {
             var order = await _orderRepo.GetByIdAsync(orderId);
-            if (order != null) await _orderRepo.UpdateAsync(order);   
+            if (order != null) await _orderRepo.UpdateAsync(order);
+            HttpContext.Session.Remove("ProductDiscount");
             TempData["Error"] = "Płatność została anulowana.";
             return RedirectToAction("Index", "Products");
         }

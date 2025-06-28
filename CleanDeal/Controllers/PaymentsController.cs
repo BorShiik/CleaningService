@@ -17,12 +17,14 @@ namespace CleanDeal.Controllers
         private readonly ICleaningOrderRepository _orderRepo;
         private readonly IPaymentRepository _paymentRepo;
         private readonly IMapper _mapper;
-        public PaymentsController(IConfiguration cfg, ICleaningOrderRepository orderRepo, IPaymentRepository paymentRepo, IMapper mapper)
+        private readonly Services.Loyalty.ILoyaltyService _loyalty;
+        public PaymentsController(IConfiguration cfg, ICleaningOrderRepository orderRepo, IPaymentRepository paymentRepo, IMapper mapper, Services.Loyalty.ILoyaltyService loyalty)
         {
             _cfg = cfg;
             _orderRepo = orderRepo;
             _paymentRepo = paymentRepo;
             _mapper = mapper;
+            _loyalty = loyalty;
         }
 
         public async Task<IActionResult> Checkout(int id)
@@ -42,7 +44,10 @@ namespace CleanDeal.Controllers
 
             ViewBag.PublishableKey = _cfg["Stripe:PublishableKey"];
             ViewBag.OrderId = id;
-            ViewBag.AmountDisplay = GetAmountInZloty(order);
+            var amount = GetAmountInZloty(order);
+            if (HttpContext.Session.GetInt32("ServiceDiscount") == 1)
+                amount *= 0.9m;
+            ViewBag.AmountDisplay = amount;
 
             var dto = _mapper.Map<CleaningOrderDTO>(order);
 
@@ -55,7 +60,10 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(orderId);
             if (order == null) return NotFound();
 
-            long amount = GetAmountInCents(order);
+            decimal baseAmount = GetAmountInZloty(order);
+            if (HttpContext.Session.GetInt32("ServiceDiscount") == 1)
+                baseAmount *= 0.9m;
+            long amount = (long)Math.Round(baseAmount * 100m);
             long tipCents = (long)Math.Round(tip * 100m);
 
             var options = new SessionCreateOptions
@@ -188,11 +196,16 @@ namespace CleanDeal.Controllers
             var order = await _orderRepo.GetByIdAsync(orderId);
             if (order == null) return NotFound();
 
-            if (order.Payment == null)       
+            var amount = GetAmountInZloty(order);
+            var hasDiscount = HttpContext.Session.GetInt32("ServiceDiscount") == 1;
+            if (hasDiscount)
+                amount *= 0.9m;
+
+            if (order.Payment == null)
             {
                 await _paymentRepo.AddAsync(new Payment
                 {
-                    Amount = GetAmountInZloty(order),
+                    Amount = amount,
                     Tip = tip ?? 0,
                     PaymentDate = DateTime.UtcNow,
                     CleaningOrderId = orderId
@@ -204,12 +217,20 @@ namespace CleanDeal.Controllers
                 await _paymentRepo.UpdateAsync(order.Payment);
             }
 
+            if (hasDiscount)
+            {
+                await _loyalty.AwardPointsAsync(order.UserId, -100, "Service discount");
+            }
+
+            HttpContext.Session.Remove("ServiceDiscount");
+
             TempData["Message"] = "Płatność zakończona pomyślnie.";
             return RedirectToAction("Details", "Orders", new { id = orderId });
         }
 
         public IActionResult Cancel(int orderId)
         {
+            HttpContext.Session.Remove("ServiceDiscount");
             TempData["Error"] = "Płatność została anulowana.";
             return RedirectToAction("Details", "Orders", new { id = orderId });
         }

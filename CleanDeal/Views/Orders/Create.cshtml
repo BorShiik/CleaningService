@@ -60,14 +60,12 @@
                                         <span class="badge bg-light text-dark fw-semibold me-2" data-price="@price">
                                             @price.ToString("c", pl)
                                         </span>
-                                        @if (!isAdmin)
-                                        {
-                                            <button type="button" class="btn btn-sm btn-outline-primary buy-discount" data-id="@id">Kup zniżkę 10% (100 pkt)</button>
-                                        }
                                     </span>
                                 </label>
                             }
                         </div>
+
+                        <button type="button" class="btn btn-sm btn-outline-primary buy-discount-all mt-2">Kup zniżkę 10% (100 pkt)</button>
 
                         <span asp-validation-for="ServiceTypeIds" class="text-danger"></span>
                     </div>
@@ -106,7 +104,7 @@
     <script>
         const checkboxes = document.querySelectorAll('input[name="ServiceTypeIds"]');
         const totalLbl = document.getElementById('totalPrice');
-        const discounts = {};
+        let discount = false;
 
         function updateRowState(cb) {
             cb.closest('.list-group-item').classList.toggle('active', cb.checked);
@@ -118,8 +116,7 @@
                 if (cb.checked) {
                     const price = parseFloat(cb.closest('.list-group-item')
                         .querySelector('[data-price]').dataset.price);
-                    const id = cb.value;
-                    const finalPrice = discounts[id] ? price * 0.9 : price;
+                    const finalPrice = discount ? price * 0.9 : price;
                     sum += finalPrice;
                 }
             });
@@ -134,24 +131,23 @@
             });
         });
 
-        document.querySelectorAll('.buy-discount').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.dataset.id;
+        const btnDiscount = document.querySelector('.buy-discount-all');
+        if (btnDiscount) {
+            btnDiscount.addEventListener('click', async () => {
                 try {
                     const resp = await fetch('@Url.Action("PurchaseDiscount", "Services")', {
                         method: 'POST',
-                        headers: { 'RequestVerificationToken': '@csrf' },
-                        body: new URLSearchParams({ id })
+                        headers: { 'RequestVerificationToken': '@csrf' }
                     });
                     if (!resp.ok) throw new Error(await resp.text());
-                    discounts[id] = true;
-                    btn.remove();
+                    discount = true;
+                    btnDiscount.remove();
                     updateTotal();
                 } catch (err) {
                     alert(err);
                 }
             });
-        });
+        }
         updateTotal();
     </script>
 }

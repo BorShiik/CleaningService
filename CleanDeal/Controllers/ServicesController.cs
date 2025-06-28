@@ -12,17 +12,14 @@ namespace CleanDeal.Controllers
     {
         private readonly IServiceTypeRepository _serviceRepo;
         private readonly IServicePackageRepository _packageRepo;
-        private readonly IUserDiscountRepository _discountRepo;
         private readonly ILoyaltyService _loyalty;
 
         public ServicesController(IServiceTypeRepository serviceRepo,
                                    IServicePackageRepository packageRepo,
-                                   IUserDiscountRepository discountRepo,
                                    ILoyaltyService loyalty)
         {
             _serviceRepo = serviceRepo;
             _packageRepo = packageRepo;
-            _discountRepo = discountRepo;
             _loyalty = loyalty;
         }
 
@@ -49,28 +46,18 @@ namespace CleanDeal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PurchaseDiscount(int id)
+        public async Task<IActionResult> PurchaseDiscount()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var balance = await _loyalty.GetBalanceAsync(userId);
             const int cost = 100;
             if (balance < cost)
             {
-                TempData["Error"] = "Brak wystarczającej liczby punktów.";
-                return RedirectToAction(nameof(Index));
+                return BadRequest("Brak wystarczającej liczby punktów.");
             }
 
-            await _loyalty.AwardPointsAsync(userId, -cost, $"Discount for service {id}");
-            await _discountRepo.AddAsync(new UserServiceDiscount
-            {
-                UserId = userId,
-                ServiceTypeId = id,
-                Percentage = 10,
-                Redeemed = false
-            });
-
-            TempData["Message"] = "Zakupiono zniżkę na usługę.";
-            return RedirectToAction(nameof(Index));
+            HttpContext.Session.SetInt32("ServiceDiscount", 1);
+            return Ok();
         }
     }
 }
