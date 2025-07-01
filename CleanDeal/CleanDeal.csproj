@@ -24,4 +24,10 @@
     <PackageReference Include="Resend" Version="0.1.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CleanDeal.DTO\CleanDeal.DTO.csproj" />
+    <ProjectReference Include="..\CleanDeal.Model\CleanDeal.Model.csproj" />
+    <ProjectReference Include="..\CleanDeal.Repositories\CleanDeal.Repositories.csproj" />
+  </ItemGroup>
+
 </Project>
